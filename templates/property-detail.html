@@ -1,0 +1,865 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% load media_extras %}
+
+{% block title %}
+{{ property.property_type }} في حي {{ property.district }} | {{ company_name }}
+{% endblock %}
+
+{% block content %}
+<div class="property-header">
+    <div class="container">
+        <h1 class="property-title-main">{{ property.property_type }} في حي {{ property.district }}</h1>
+
+        <div class="property-meta-header">
+            <div class="meta-header-item">
+                <i class="fas fa-hashtag"></i> 
+                <span>{{ property.listing_id }}</span>
+            </div>
+            <div class="meta-header-item">
+                <i class="fas fa-map-marker-alt"></i> 
+                <span>{{ property.city }} - {{ property.district }}</span>
+            </div>
+        </div>
+
+        <!-- شارات: استفسارات تراكمية حقيقية + تاريخ إضافة العرض -->
+        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <span class="badge" style="background: rgba(197, 160, 89, 0.1); color: var(--gold); border: 1px solid var(--gold); padding: 5px 12px; font-size: 0.85rem;">
+                <i class="fas fa-comments"></i>
+                {% if property.inquiry_count %}
+                    إجمالي الاستفسارات المسجّلة منذ بداية العرض: <strong>{{ property.inquiry_count }}</strong>
+                {% else %}
+                    لا توجد استفسارات مسجّلة بعد منذ بداية العرض
+                {% endif %}
+            </span>
+            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid #3b82f6; padding: 5px 12px; font-size: 0.85rem;">
+                <i class="fas fa-calendar-alt"></i>
+                أضيف للعرض: {{ property.created_at|date:"Y/m/d" }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if messages %}
+    <div class="property-messages">
+        {% for message in messages %}
+        <div class="property-message
+            {% if message.tags == 'success' %}property-message--success
+            {% elif message.tags == 'error' %}property-message--error
+            {% elif message.tags == 'warning' %}property-message--warning
+            {% else %}property-message--info{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="gallery-container reveal">
+        <div class="swiper mySwiper swiper-detail" dir="ltr">
+            <div class="swiper-wrapper" id="fallbackWrapper">
+                {% if property.all_images %}
+                    {% for img in property.all_images %}
+                    <div class="swiper-slide {% if forloop.first %}active-fallback{% endif %}">
+                        <img src="{{ img.url }}" alt="صورة العقار" loading="lazy">
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="swiper-slide active-fallback">
+                        <img src="{% static 'images/default-property.jpg' %}" alt="لا توجد صور">
+                    </div>
+                {% endif %}
+
+                {% if property.embed_video_url %}
+                <div class="swiper-slide {% if not property.all_images %}active-fallback{% endif %}" style="display:flex; align-items:center; justify-content:center; background:#000;">
+                    <iframe id="vid-frame" width="100%" height="100%" src="{{ property.embed_video_url }}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+                    </iframe>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if property.embed_video_url %}
+            <div class="video-badge" style="pointer-events: none;">
+                <i class="fas fa-video"></i> <span>يوجد عرض مرئي</span>
+            </div>
+            {% endif %}
+
+            <div class="fallback-nav next-btn" id="fallbackNext"></div>
+            <div class="fallback-nav prev-btn" id="fallbackPrev"></div>
+            <div class="slide-counter-fallback" id="fallbackCounter">
+                1 / {% if property.embed_video_url %}{{ property.all_images|length|add:1 }}{% else %}{{ property.all_images|length }}{% endif %}
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+
+    <div class="top-row-grid">
+        <div class="reveal reveal-delay-1">
+            <div class="info-card">
+                <h3>تفاصيل العقار</h3>
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">المساحة:</span>
+                        <span class="spec-value" dir="ltr">{{ property.area|floatformat:2 }} م²</span>
+                    </div>
+
+                    <div class="spec-item">
+                        <span class="spec-label">السعر:</span>
+                        <span class="spec-value" style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
+                            <span>
+                                {% if property.display_price %}
+                                {{ property.display_price|intcomma }} ريال
+                                {% else %}
+                                عند التواصل
+                                {% endif %}
+                            </span>
+
+                            {% if property.negotiation_status %}
+                                {% if property.negotiation_status == 'قابل للتفاوض' %}
+                                <span class="badge badge-success" style="font-size: 0.75rem;">قابل للتفاوض</span>
+                                {% elif property.negotiation_status == 'غير قابل للتفاوض' %}
+                                <span class="badge badge-danger" style="font-size: 0.75rem;">غير قابل للتفاوض</span>
+                                {% elif property.negotiation_status == 'على السوم' %}
+                                <span class="badge badge-warning" style="font-size: 0.75rem;">على السوم</span>
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="spec-item">
+                        <span class="spec-label">نوع العرض:</span>
+                        <span class="badge 
+                            {% if property.get_offer_type_display == 'بيع' %}bg-sale
+                            {% elif property.get_offer_type_display == 'إيجار' %}bg-rent
+                            {% elif property.get_offer_type_display == 'إستثمار' or property.get_offer_type_display == 'استثمار' %}bg-investment
+                            {% else %}bg-sale{% endif %}" style="min-width: 80px; text-align: center;">
+                            {{ property.get_offer_type_display }}
+                        </span>
+                    </div>
+
+                    <div class="spec-item">
+                        <span class="spec-label">حالة العقار:</span>
+                        <span class="badge 
+                            {% if property.status == 'متاح' %}bg-available
+                            {% elif property.status == 'قيد التفاوض' %}bg-negotiation
+                            {% else %}bg-ended{% endif %}" style="min-width: 80px; text-align: center;">
+                            {{ property.get_status_display }}
+                        </span>
+                    </div>
+
+                    {% if property.rooms %}
+                    <div class="spec-item">
+                        <span class="spec-label">عدد الغرف:</span>
+                        <span class="spec-value">{{ property.rooms }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if property.bathrooms %}
+                    <div class="spec-item">
+                        <span class="spec-label">دورات المياه:</span>
+                        <span class="spec-value">{{ property.bathrooms }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if property.category %}
+                    <div class="spec-item">
+                        <span class="spec-label">تصنيف العقار:</span>
+                        <span class="spec-value">{{ property.category }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if property.property_age != None %}
+                    <div class="spec-item">
+                        <span class="spec-label">عمر العقار:</span>
+                        <span class="spec-value">
+                            {% if property.property_age == 0 %}جديد{% else %}{{ property.property_age }} سنة{% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {% if property.floors %}
+                    <div class="spec-item">
+                        <span class="spec-label">عدد الأدوار:</span>
+                        <span class="spec-value">{{ property.floors }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if property.apartments %}
+                    <div class="spec-item">
+                        <span class="spec-label">عدد الشقق:</span>
+                        <span class="spec-value">{{ property.apartments }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if property.owner_notes %}
+                <div class="property-notes">
+                    <h4 style="color: var(--navy); margin-bottom: 1rem; margin-top: 2rem;">وصف العقار</h4>
+                    <p>{{ property.owner_notes|linebreaksbr }}</p>
+                </div>
+                {% endif %}
+
+                {% if property.show_map_to_visitors and property.map_url %}
+                <div class="property-map gmaps-section">
+                    <h4 class="gmaps-section-title">موقع العقار</h4>
+
+                    <div class="map-wrapper gmaps-card">
+                        {% if '<iframe' in property.map_url %}
+                            <div class="gmaps-card-head">
+                                <span class="gmaps-brand" aria-hidden="true">
+                                    <svg class="gmaps-pin" viewBox="0 0 48 64" width="28" height="36" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="#EA4335" d="M24 0C12.4 0 3 9.4 3 21c0 15.8 21 43 21 43s21-27.2 21-43C45 9.4 35.6 0 24 0z"/>
+                                        <circle fill="#fff" cx="24" cy="21" r="8.5"/>
+                                        <circle fill="#4285F4" cx="24" cy="21" r="4.2"/>
+                                    </svg>
+                                    <span class="gmaps-wordmark">Google <strong>Maps</strong></span>
+                                </span>
+                            </div>
+                            <div class="gmaps-embed">
+                                {{ property.map_url|safe }}
+                            </div>
+                        {% elif 'embed' in property.map_url %}
+                            <div class="gmaps-card-head">
+                                <span class="gmaps-brand" aria-hidden="true">
+                                    <svg class="gmaps-pin" viewBox="0 0 48 64" width="28" height="36" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="#EA4335" d="M24 0C12.4 0 3 9.4 3 21c0 15.8 21 43 21 43s21-27.2 21-43C45 9.4 35.6 0 24 0z"/>
+                                        <circle fill="#fff" cx="24" cy="21" r="8.5"/>
+                                        <circle fill="#4285F4" cx="24" cy="21" r="4.2"/>
+                                    </svg>
+                                    <span class="gmaps-wordmark">Google <strong>Maps</strong></span>
+                                </span>
+                            </div>
+                            <div class="gmaps-embed">
+                                <iframe src="{{ property.map_url }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="موقع العقار على خرائط جوجل"></iframe>
+                            </div>
+                        {% else %}
+                            <div class="gmaps-link-panel">
+                                <div class="gmaps-brand gmaps-brand--lg" aria-hidden="true">
+                                    <svg class="gmaps-pin" viewBox="0 0 48 64" width="44" height="58" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="#EA4335" d="M24 0C12.4 0 3 9.4 3 21c0 15.8 21 43 21 43s21-27.2 21-43C45 9.4 35.6 0 24 0z"/>
+                                        <circle fill="#fff" cx="24" cy="21" r="8.5"/>
+                                        <circle fill="#4285F4" cx="24" cy="21" r="4.2"/>
+                                    </svg>
+                                    <span class="gmaps-wordmark">Google <strong>Maps</strong></span>
+                                </div>
+                                <p class="gmaps-link-text">موقع العقار متاح على خرائط جوجل</p>
+                                <a href="{{ property.map_url }}" target="_blank" rel="noopener noreferrer" class="gmaps-open-btn">
+                                    <svg class="gmaps-btn-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="currentColor" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.4 0-2.5-1.1-2.5-2.5S10.6 6.5 12 6.5s2.5 1.1 2.5 2.5S13.4 11.5 12 11.5z"/>
+                                    </svg>
+                                    <span>فتح الموقع في Google Maps</span>
+                                    <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="margin-top: 3rem; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 2rem;">
+                    <h4 style="color: var(--navy); margin-bottom: 1.5rem;">تفاعل مع العرض</h4>
+                    
+                    <button id="btn-generate-brochure" class="btn-whatsapp-card" onclick="generateSmartLink({{ property.pk }})" style="display: inline-flex; width: auto; padding: 1rem 3rem; background: var(--gold);">
+                        <i class="fas fa-share-nodes"></i> شارك العرض
+                    </button>
+
+                    <div id="smart-link-container" style="display: none; margin-top: 20px; background: #f8fafc; padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="smart-link-url" readonly style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #334155; min-width: 200px;" dir="ltr">
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="copyGeneratedLink()" class="btn-search" style="padding: 0.5rem 1rem;"><i class="fas fa-copy"></i> نسخ</button>
+                                <button id="smart-link-share" onclick="shareGeneratedLink()" class="btn-search" style="padding: 0.5rem 1rem; background: var(--navy);"><i class="fas fa-share-nodes"></i> مشاركة</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="reveal reveal-delay-2">
+            <div class="inquiry-box appointment-box {% if open_appointment_accordion %}open{% endif %}" id="appointmentAccordion">
+                <div class="inquiry-header" onclick="toggleAppointment()">
+                    <div class="inquiry-title">احجز موعد معاينة</div>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="inquiry-body">
+                    <div class="appointment-card glass-card" id="appointment-booking">
+                        <div class="appointment-card__head">
+                            <h3 style="margin:0;color:#fff;">احجز موعد معاينة</h3>
+                            <span style="font-size:0.85rem;color:rgba(255,255,255,0.75);">الحجز متاح بدون تسجيل دخول</span>
+                        </div>
+                        <form method="POST" action="{% url 'listings:appointment-create' property.pk %}">
+                            {% csrf_token %}
+                            <div class="appointment-grid">
+                                <div class="appointment-field">
+                                    <label class="appointment-label">الاسم الكامل</label>
+                                    {{ appointment_form.client_name }}
+                                    {% if appointment_form.client_name.errors %}
+                                        <small class="appointment-error">{{ appointment_form.client_name.errors|join:", " }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="appointment-field">
+                                    <label class="appointment-label">البريد الإلكتروني (اختياري)</label>
+                                    {{ appointment_form.client_email }}
+                                    {% if appointment_form.client_email.errors %}
+                                        <small class="appointment-error">{{ appointment_form.client_email.errors|join:", " }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="appointment-field">
+                                    <label class="appointment-label">رقم الجوال</label>
+                                    {{ appointment_form.client_phone }}
+                                    {% if appointment_form.client_phone.errors %}
+                                        <small class="appointment-error">{{ appointment_form.client_phone.errors|join:", " }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="appointment-field">
+                                    <label class="appointment-label">تاريخ الموعد</label>
+                                    {{ appointment_form.booking_date }}
+                                    {% if appointment_form.booking_date.errors %}
+                                        <small class="appointment-error">{{ appointment_form.booking_date.errors|join:", " }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="appointment-field appointment-field--full">
+                                    <label class="appointment-label">وقت الموعد</label>
+                                    {{ appointment_form.booking_time }}
+                                    {% if appointment_form.booking_time.errors %}
+                                        <small class="appointment-error">{{ appointment_form.booking_time.errors|join:", " }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-search appointment-submit">
+                                تأكيد الموعد
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="inquiry-box" id="inquiryAccordion">
+                <div class="inquiry-header" onclick="toggleInquiry()">
+                    <div class="inquiry-title">مهتم بالعقار؟ تواصل معنا</div>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+
+                <div class="inquiry-body">
+                    <form id="property-inquiry-form" method="POST" action="{% url 'listings:api-property-inquiry' property.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="الاسم" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="phone" placeholder="رقم الجوال" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="notes" placeholder="الملاحظات" class="form-textarea" rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-search" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                            إرسال الطلب
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- العقارات المشابهة -->
+<section id="similar-properties-section" class="offers-section" style="background: #fff; margin-top: 40px; border-top: 1px solid #eee; padding: 40px 0;">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">عقارات مشابهة قد تنال إعجابك</h2>
+            <div class="title-line"></div>
+        </div>
+        <div id="similarPropertiesList" class="grid-listing">
+            <!-- كروت العقارات المشابهة -->
+        </div>
+    </div>
+</section>
+
+{# Swiper via CDNJS (أكثر استقراراً على بعض الشبكات) #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.1.4/swiper-bundle.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.1.4/swiper-bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+
+<style>
+  .property-messages {
+    margin: 1rem 0 1.5rem;
+  }
+
+  .property-message {
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+
+  .property-message--success {
+    background: rgba(34, 197, 94, 0.12);
+    color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+  }
+
+  .property-message--error {
+    background: rgba(239, 68, 68, 0.12);
+    color: #991b1b;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+
+  .property-message--warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+  }
+
+  .property-message--info {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+  }
+
+  .glass-card {
+    margin-bottom: 0;
+    background: linear-gradient(145deg, rgba(10, 23, 53, 0.92), rgba(8, 18, 44, 0.9));
+    border: 1px solid rgba(201, 162, 74, 0.25);
+    box-shadow: 12px 12px 28px rgba(0, 0, 0, 0.35), -8px -8px 20px rgba(255, 255, 255, 0.03);
+    border-radius: 18px;
+    padding: 1.1rem;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .appointment-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .appointment-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .appointment-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .appointment-field--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .appointment-label {
+    display: block;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.86rem;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+  }
+
+  .appointment-input {
+    width: 100%;
+    border: 1px solid rgba(201, 162, 74, 0.26);
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.72rem 0.8rem;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .appointment-input:focus {
+    border-color: rgba(201, 162, 74, 0.55);
+    box-shadow: 0 0 0 3px rgba(201, 162, 74, 0.2);
+  }
+
+  .appointment-input option {
+    color: #0b1b3a;
+    background: #fff;
+  }
+
+  .appointment-error {
+    display: block;
+    color: #fecaca;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .appointment-submit {
+    margin-top: 0.95rem;
+    width: 100%;
+    font-weight: 700;
+    padding: 0.9rem;
+  }
+
+  .appointment-box {
+    margin-bottom: 1.25rem;
+  }
+
+  /* ====================================================
+     Gallery Container - Full Control
+  ==================================================== */
+  
+  /* سلايدات مخفية افتراضياً -- سوايبر أو الفالباك يجعلون النشط ظاهراً */
+  .swiper-slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* سوايبر يتحكم بكل شيء بعد التهيئة */
+  .swiper-initialized .swiper-slide {
+    display: block;
+  }
+
+  /* السلايد النشط في وضع الفالباك (إذا لم يعمل سوايبر) */
+  .swiper:not(.swiper-initialized) .swiper-slide.active-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* الغلاف لنسق swiper-wrapper في وضع الفالباك */
+  .swiper:not(.swiper-initialized) .swiper-wrapper {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: #111;
+  }
+
+  /* السلايد النشط تملأ كامل الحاوي في وضع الفالباك */
+  .swiper:not(.swiper-initialized) .swiper-slide.active-fallback {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  /* عداد السلايدات */
+  .slide-counter-fallback {
+    display: none;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    z-index: 10001;
+    pointer-events: none;
+  }
+  .swiper:not(.swiper-initialized) .slide-counter-fallback { display: block; }
+
+  /* أزرار التنقل -- دائمة الظهور */
+  .fallback-nav {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 56px;
+    height: 56px;
+    background: rgba(0, 0, 150, 0.45);
+    color: white;
+    border-radius: 50%;
+    z-index: 10002;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255,255,255,0.8);
+    transition: background 0.25s;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .swiper-initialized .fallback-nav,
+  .swiper-initialized .slide-counter-fallback { display: none !important; }
+  .fallback-nav:hover { background: rgba(0, 0, 200, 0.7); }
+
+  /* سهام التنقل */
+  .fallback-nav::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-top: 3px solid white;
+    border-right: 3px solid white;
+  }
+  .fallback-nav.next-btn { right: 15px; }
+  .fallback-nav.next-btn::before { transform: rotate(45deg); margin-right: 4px; }
+  .fallback-nav.prev-btn { left: 15px; }
+  .fallback-nav.prev-btn::before { transform: rotate(-135deg); margin-left: 4px; }
+
+  /* إخفاء أزرار Swiper الأصلية في وضع الفالباك */
+  .swiper:not(.swiper-initialized) .swiper-button-next,
+  .swiper:not(.swiper-initialized) .swiper-button-prev,
+  .swiper:not(.swiper-initialized) .swiper-pagination { display: none !important; }
+</style>
+
+<script>
+    function toggleAppointment() {
+        const box = document.getElementById('appointmentAccordion');
+        if (!box) return;
+        box.classList.toggle('open');
+    }
+
+    function toggleInquiry() {
+        const box = document.getElementById('inquiryAccordion');
+        box.classList.toggle('open');
+    }
+
+    function initAppointmentFlatpickr() {
+        const dateInput = document.querySelector('.js-flatpickr-date');
+        if (!dateInput || typeof flatpickr === 'undefined') return;
+        if (window.flatpickr && flatpickr.l10ns && flatpickr.l10ns.ar) {
+            flatpickr.localize(flatpickr.l10ns.ar);
+        }
+        flatpickr(dateInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disableMobile: true,
+            locale: "ar",
+            disable: [
+                function(date) {
+                    // تعطيل الجمعة (Mon=1... Fri=5 في JS: Sun=0 -> Fri=5)
+                    return date.getDay() === 5;
+                }
+            ],
+        });
+    }
+
+    async function generateSmartLink(propertyId) {
+        const btn = document.getElementById('btn-generate-brochure');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+        btn.disabled = true;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const response = await fetch(`/api/properties/${propertyId}/smart-link/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (response.ok && data.ok) {
+                document.getElementById('smart-link-url').value = data.smart_link;
+                window.currentSmartLink = data.smart_link;
+                document.getElementById('smart-link-container').style.display = 'block';
+                btn.style.display = 'none';
+            } else {
+                alert('حدث خطأ أثناء إنشاء البروشور.');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        } catch (error) {
+            alert('حدث خطأ في الاتصال.');
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+    }
+
+    async function fetchSimilarProperties(pk) {
+        try {
+            const res = await fetch(`/api/properties/${pk}/similar/`);
+            const props = await res.json();
+            const container = document.getElementById('similarPropertiesList');
+            const section = document.getElementById('similar-properties-section');
+            if (!container || props.length === 0) {
+                if (section) section.style.display = 'none';
+                return;
+            }
+            props.forEach(prop => {
+                container.innerHTML += `
+                    <div class="property-card">
+                        <div class="property-thumb">
+                            <img src="${prop.image_url}" alt="${prop.property_type}">
+                        </div>
+                        <div class="property-content">
+                            <h4 style="font-size: 1rem; margin-bottom: 10px;">${prop.property_type} في ${prop.district}</h4>
+                            <div style="color: var(--gold); font-weight: bold; margin-bottom: 15px;">
+                                ${prop.display_price || prop.price + ' ريال'}
+                            </div>
+                            <a href="/property/${prop.id}/" class="btn-whatsapp-card" style="text-decoration: none; padding: 5px 10px; font-size: 0.9rem;">
+                                عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error("Error fetching similar properties:", e);
+        }
+    }
+
+    function shareGeneratedLink() {
+        const link = window.currentSmartLink;
+        if (!link) return;
+        if (navigator.share) {
+            navigator.share({
+                title: 'عرض عقاري مميز من {{ company_name }}',
+                text: 'شاهد تفاصيل هذا العرض العقاري المميز عبر الرابط التفاعلي:',
+                url: link
+            });
+        } else { alert('يرجى نسخ الرابط ومشاركته يدوياً.'); }
+    }
+
+    function copyGeneratedLink() {
+        if (window.BehavioralTracker) BehavioralTracker.addScore(BehavioralTracker.POINTS.SHARE_LINK, "Copied Link");
+        const copyText = document.getElementById("smart-link-url");
+        copyText.select();
+        navigator.clipboard.writeText(copyText.value);
+        alert("تم نسخ الرابط بنجاح!");
+    }
+
+    // ============================================================
+    // GALLERY: Fallback navigation (works WITHOUT Swiper)
+    // ============================================================
+    var _fallback = { currentIndex: 0, total: 0, slides: [], counter: null };
+
+    function initFallbackNav() {
+        var wrapper = document.getElementById('fallbackWrapper');
+        if (!wrapper) return;
+        var slides = Array.from(wrapper.children).filter(function(el) {
+            return el.classList.contains('swiper-slide');
+        });
+        if (slides.length === 0) return;
+
+        _fallback.slides = slides;
+        _fallback.total = slides.length;
+        _fallback.currentIndex = 0;
+        _fallback.counter = document.getElementById('fallbackCounter');
+
+        function showSlide(idx) {
+            _fallback.currentIndex = ((idx % _fallback.total) + _fallback.total) % _fallback.total;
+            _fallback.slides.forEach(function(s, i) {
+                if (i === _fallback.currentIndex) {
+                    s.classList.add('active-fallback');
+                } else {
+                    s.classList.remove('active-fallback');
+                }
+            });
+            if (_fallback.counter) {
+                _fallback.counter.textContent = (_fallback.currentIndex + 1) + ' / ' + _fallback.total;
+            }
+        }
+
+        var fNext = document.getElementById('fallbackNext');
+        var fPrev = document.getElementById('fallbackPrev');
+        if (fNext) {
+            fNext.onclick = function(e) {
+                e.preventDefault(); e.stopPropagation();
+                showSlide(_fallback.currentIndex + 1);
+            };
+        }
+        if (fPrev) {
+            fPrev.onclick = function(e) {
+                e.preventDefault(); e.stopPropagation();
+                showSlide(_fallback.currentIndex - 1);
+            };
+        }
+        // إظهار الصورة الأولى فوراً
+        showSlide(0);
+        console.log('[Gallery] Fallback initialized with', _fallback.total, 'slides');
+    }
+
+    // ============================================================
+    // GALLERY: Try to init Swiper (if library loaded)
+    // ============================================================
+    function initPropertySwiper() {
+        if (typeof window.Swiper === 'undefined') return false;
+        var el = document.querySelector('.mySwiper');
+        if (!el || el.classList.contains('swiper-initialized')) return true;
+        var slidesCount = el.querySelectorAll('.swiper-slide').length;
+        var enableLoop = slidesCount > 1;
+        try {
+            new Swiper(el, {
+                slidesPerView: 1,
+                spaceBetween: 0,
+                loop: enableLoop,
+                observer: true,
+                observeParents: true,
+                navigation: slidesCount > 1 ? { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' } : false,
+                pagination: { el: '.swiper-pagination', clickable: true },
+                autoplay: enableLoop ? { delay: 3500, disableOnInteraction: true } : false,
+            });
+            console.log('[Gallery] Swiper initialized with', slidesCount, 'slides');
+            return true;
+        } catch(e) {
+            console.warn('[Gallery] Swiper init failed:', e);
+            return false;
+        }
+    }
+
+    function initWithRetry(tries) {
+        if (initPropertySwiper()) return;
+        if (tries <= 0) return;
+        setTimeout(function() { initWithRetry(tries - 1); }, 400);
+    }
+
+    // ============================================================
+    // BOOT: تشغيل فوري بدون انتظار أي حدث
+    // ============================================================
+    (function boot() {
+        // الـ fallback يعمل فوراً دون أي انتظار
+        if (document.getElementById('fallbackWrapper')) {
+            initFallbackNav();
+        } else {
+            // نادراً: إذا لم يتوفر DOM بعد
+            document.addEventListener('DOMContentLoaded', initFallbackNav);
+        }
+
+        // Swiper: نجرب بعد 300ms (يكون قد تحمّل من CDN)
+        setTimeout(function() { initWithRetry(8); }, 300);
+
+        // مهام أخرى بعد DOM
+        function onReady() {
+            initAppointmentFlatpickr();
+            // تأخير قصير لضمان تحميل behavioral_tracker.js من base.html
+            function doTrack() {
+                if (window.BehavioralTracker && typeof window.BehavioralTracker.trackPropertyView === 'function') {
+                    window.BehavioralTracker.trackPropertyView(
+                        {{ property.pk|default:"null" }},
+                        "{{ property.property_type|escapejs }}",
+                        "{{ property.district|escapejs }}"
+                    );
+                }
+            }
+            // إذا كان BehavioralTracker جاهزاً نُشغّله الآن، وإلا ننتظر 500ms
+            if (window.BehavioralTracker) {
+                doTrack();
+            } else {
+                setTimeout(doTrack, 500);
+            }
+            fetchSimilarProperties({{ property.pk|default:"null" }});
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', onReady);
+        } else {
+            onReady();
+        }
+    })();
+</script>
+{% endblock %}

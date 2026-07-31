@@ -1,0 +1,565 @@
+{% extends "admin/base_site.html" %}
+{% load static humanize %}
+
+{% block bodyclass %}jodah-marketer-dashboard{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --md-bg: #07101c;
+        --md-card: rgba(15, 23, 42, 0.85);
+        --md-gold: #c5a059;
+        --md-gold-bright: #e0c38c;
+        --md-muted: #94a3b8;
+        --md-success: #10b981;
+        --md-info: #60a5fa;
+        --md-border: rgba(197, 160, 89, 0.22);
+    }
+
+    body, #container, .content-wrapper, #content {
+        background-color: var(--md-bg) !important;
+        font-family: 'Tajawal', sans-serif;
+        color: #fff;
+    }
+
+    .md-wrap {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0 12px 48px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    @media (max-width: 576px) {
+        .md-hero h1 { font-size: 1.25rem !important; }
+        .md-toolbar { width: 100%; }
+        .md-period-pills { width: 100%; justify-content: flex-start; }
+        .md-kpi-grid { grid-template-columns: 1fr 1fr !important; }
+    }
+
+    /* مراسي التنقل من الشريط الجانبي — تفادي قص المحتوى تحت الهيدر */
+    #generator-section,
+    #properties-section,
+    #assignments-section {
+        scroll-margin-top: 88px;
+    }
+
+    .md-hero {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--md-border);
+    }
+    .md-hero h1 {
+        font-family: 'Cairo', sans-serif;
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: var(--md-gold-bright);
+        margin: 0 0 6px;
+    }
+    .md-hero p {
+        margin: 0;
+        color: var(--md-muted);
+        font-size: 0.92rem;
+        max-width: 560px;
+        line-height: 1.5;
+    }
+
+    .md-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    .md-period-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .md-period-pills a {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--md-muted);
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        transition: 0.2s;
+    }
+    .md-period-pills a:hover { border-color: var(--md-gold); color: var(--md-gold-bright); }
+    .md-period-pills a.active {
+        background: rgba(197, 160, 89, 0.15);
+        border-color: var(--md-gold);
+        color: var(--md-gold-bright);
+    }
+
+    .md-select-wrap label {
+        font-size: 0.75rem;
+        color: var(--md-muted);
+        display: block;
+        margin-bottom: 4px;
+    }
+    .md-select-wrap select {
+        background: #0f172a;
+        color: #fff;
+        border: 1px solid var(--md-border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        min-width: 200px;
+        font-weight: 600;
+    }
+
+    .md-quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    .md-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid var(--md-border);
+        background: rgba(255,255,255,0.04);
+        color: var(--md-gold-bright);
+        transition: 0.2s;
+    }
+    .md-btn:hover { background: rgba(197, 160, 89, 0.12); border-color: var(--md-gold); color: #fff; }
+    .md-btn--primary {
+        background: linear-gradient(135deg, rgba(197, 160, 89, 0.25), rgba(197, 160, 89, 0.08));
+        border-color: var(--md-gold);
+        color: #fff;
+    }
+
+    .md-card {
+        background: var(--md-card);
+        border: 1px solid var(--md-border);
+        border-radius: 16px;
+        padding: 20px 22px;
+        margin-bottom: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    .md-card__title {
+        font-family: 'Cairo', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--md-gold-bright);
+        margin: 0 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .md-card__title small {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--md-muted);
+    }
+
+    .md-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+    .md-kpi {
+        text-align: center;
+        padding: 14px 10px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .md-kpi span.label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--md-muted);
+        margin-bottom: 6px;
+    }
+    .md-kpi strong {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #fff;
+    }
+    .md-kpi .sub { font-size: 0.75rem; color: var(--md-success); }
+
+    .md-perms {
+        font-size: 0.85rem;
+        color: var(--md-muted);
+        line-height: 1.65;
+    }
+    .md-perms ul { margin: 8px 0 0; padding-right: 20px; }
+    .md-perms a { color: var(--md-gold-bright); }
+
+    .md-table-wrap { overflow-x: auto; }
+    .md-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 6px;
+        font-size: 0.86rem;
+    }
+    .md-table thead th {
+        color: var(--md-gold);
+        text-align: right;
+        padding: 10px 12px;
+        border-bottom: 2px solid var(--md-border);
+        white-space: nowrap;
+    }
+    .md-table tbody td {
+        background: rgba(255,255,255,0.03);
+        padding: 12px;
+        vertical-align: middle;
+    }
+    .md-table tbody tr:hover td { background: rgba(255,255,255,0.07); }
+
+    .md-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; }
+    .md-badge--ok { background: rgba(16, 185, 129, 0.15); color: var(--md-success); }
+    .md-badge--muted { background: rgba(148, 163, 184, 0.12); color: var(--md-muted); }
+
+    .md-team-table .name-cell { font-weight: 700; color: #fff; }
+    .md-copy-btn {
+        cursor: pointer;
+        border: none;
+        background: rgba(197, 160, 89, 0.15);
+        color: var(--md-gold-bright);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    .md-copy-btn:hover { background: rgba(197, 160, 89, 0.28); }
+
+    .alert-card {
+        background: rgba(197, 160, 89, 0.1);
+        border-right: 4px solid var(--md-gold);
+        transition: transform 0.3s;
+    }
+    .alert-card:hover { transform: scale(1.01); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="md-wrap">
+
+    <!-- العنوان -->
+    <div class="md-hero">
+        <div>
+            <h1><i class="fas fa-chart-line" style="opacity:.9;"></i> {{ title }}</h1>
+            <p>
+                لوحة موحّدة لروابطك الذكية، الطلبات المسندة من الإدارة، والمؤشرات.
+                {% if can_view_team_analytics %}أنت تشاهد بيانات المسوّق المختار أو فريقك بالكامل في الأسفل.{% else %}تظهر عندك فقط بياناتك وصلاحياتك.{% endif %}
+            </p>
+        </div>
+        <div class="md-toolbar">
+            <div class="md-period-pills">
+                {% for p in period_presets %}
+                <a href="?{{ p.query }}" class="{% if period == p.key %}active{% endif %}">{{ p.label }}</a>
+                {% endfor %}
+            </div>
+            {% if can_view_team_analytics and marketers %}
+            <div class="md-select-wrap">
+                <label for="md-marketer-select">مسوّق</label>
+                <select id="md-marketer-select" onchange="location.href=this.value ? ('?user_id='+this.value+'&period={{ period|urlencode }}') : ('?period={{ period|urlencode }}');">
+                    <option value="" {% if team_scope %}selected{% endif %}>ملخص الفريق</option>
+                    {% for m in marketers %}
+                    <option value="{{ m.id }}" {% if m.id == selected_user_id %}selected{% endif %}>{{ m.get_full_name|default:m.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if user.is_superuser and impersonate_start_url %}
+            <form method="post" action="{{ impersonate_start_url }}" class="md-impersonate-form" style="display:inline-flex;align-items:center;gap:8px;margin-right:8px;">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ selected_user_id }}" />
+                <button type="submit" class="md-btn" style="border-color:#c5a059;color:#e0c38c;" title="تشاهد النظام كما يراه هذا المسوق دون تسجيل خروج">
+                    <i class="fas fa-user-secret"></i> الدخول كهذا المسوق
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    {% if missing_marketer_admin_perms %}
+    <div class="md-card" style="border-right:4px solid #dc3545;background:rgba(220,53,69,0.12);">
+        <div class="md-card__title" style="color:#f8b4ba;"><i class="fas fa-exclamation-triangle"></i> صلاحيات لوحة الإدارة ناقصة</div>
+        <p class="mb-2" style="color:var(--md-muted);">
+            حسابك <strong>موظف (staff)</strong> لكن لا تملك صلاحية عرض/تعديل على النماذج المطلوبة، لذلك تظهر <strong>403 Forbidden</strong> عند فتح روابط الإدارة.
+            الأقسام المتأثرة: <strong>{{ missing_marketer_admin_perms|join:"، " }}</strong>.
+        </p>
+        <p class="mb-0 small" style="color:var(--md-muted);">
+            <strong>للمدير{% if primary_admin_username %} ({{ primary_admin_username }}){% endif %}:</strong> شغّل <code>python manage.py sync_marketer_permissions</code> ثم أضف المستخدم إلى مجموعة <strong>«المسوقين»</strong>
+            {% if user.is_superuser %}
+            من <a href="{% url 'admin:auth_user_changelist' %}" style="color:var(--md-gold-bright);">المستخدمين</a>
+            أو من <a href="{% url 'admin:auth_group_changelist' %}" style="color:var(--md-gold-bright);">المجموعات</a>.
+            {% else %}
+            (يحتاج المدير فتح المستخدمين أو المجموعات من لوحته).
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- إجراءات سريعة + إضافة مسوّق (مرساة: توليد رابط ذكي) -->
+    <div class="md-quick-actions" id="generator-section">
+        {% if user.is_superuser %}
+        <a class="md-btn md-btn--primary" href="{{ admin_urls.user_add }}"><i class="fas fa-user-plus"></i> إضافة مستخدم (مسوّق)</a>
+        <a class="md-btn" href="{{ admin_urls.users }}"><i class="fas fa-users-cog"></i> كل المستخدمين</a>
+        <a class="md-btn" href="{{ admin_urls.groups }}"><i class="fas fa-shield-alt"></i> المجموعات والصلاحيات</a>
+        {% endif %}
+        <a class="md-btn md-btn--primary" href="{{ admin_urls.smart_link_add }}" title="يُنشأ الرابط باسمك فقط"><i class="fas fa-plus-circle"></i> إضافة رابط ذكي لي</a>
+        <a class="md-btn" href="{{ admin_urls.property_leads }}"><i class="fas fa-user-clock"></i> العملاء المحتملون</a>
+        <a class="md-btn" href="{{ admin_urls.property_requests }}"><i class="fas fa-search-location"></i> طلبات العقار</a>
+        <a class="md-btn" href="{{ admin_urls.smart_links }}"><i class="fas fa-list"></i> روابطي الذكية (قائمة)</a>
+        <a class="md-btn" href="{{ admin_urls.requests_assigned_to_marketer }}"><i class="fas fa-user-check"></i> طلباتي المسندة (فلتر)</a>
+    </div>
+
+    <!-- التنبيهات -->
+    {% if unread_notifications %}
+    <div class="md-card">
+        <div class="md-card__title"><i class="fas fa-bell"></i> تنبيهات ذكية</div>
+        <div class="row">
+            {% for alert in unread_notifications %}
+            <div class="col-md-4 mb-2">
+                <div class="md-card alert-card p-3 mb-0">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>{{ alert.title }}</strong>
+                        <small class="text-white-50">{{ alert.created_at|naturaltime }}</small>
+                    </div>
+                    <p class="small mb-1">{{ alert.message|truncatechars:120 }}</p>
+                    {% if alert.link %}
+                    <a href="{{ alert.link }}" class="btn btn-sm btn-link text-warning p-0">متابعة <i class="fas fa-arrow-left"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- صلاحيات وتوضيح -->
+    <div class="md-card">
+        <div class="md-card__title"><i class="fas fa-info-circle"></i> الصلاحيات وكيف تعمل اللوحة</div>
+        <div class="md-perms">
+            <ul>
+                <li><strong>مرجع الحسابات:</strong> مدير النظام <code>{{ primary_admin_username|default:"badr9090" }}</code> — المسوّق المرجعي «الأول» في القوائم <code>{{ primary_marketer_username|default:"b1" }}</code> (قابل للتعديل عبر <code>PRIMARY_ADMIN_USERNAME</code> و<code>PRIMARY_MARKETER_USERNAME</code>).</li>
+                <li><strong>المسوّق (staff):</strong> يرى إحصائيات روابطه الذكية فقط، والعملاء المرتبطين بروابطه، والمهام <strong>المسندة إليه</strong> (طلبات بحث عن عقار وطلبات تسويق عقار).</li>
+                <li><strong>المدير:</strong> يختار مسوّقاً (يُرتَّب المدير ثم <code>{{ primary_marketer_username|default:"b1" }}</code> ثم البقية)، ويمكنه <strong>«الدخول كهذا المسوق»</strong> أو إدارة المستخدمين والمجموعات.</li>
+                <li><strong>مسوّق جديد:</strong> «إضافة مستخدم» ← تفعيل <strong>موظف (Staff)</strong> ← مجموعة «المسوقين» أو صلاحيات مخصصة.</li>
+            </ul>
+            <p class="mb-0"><strong>اقتراح:</strong> مجموعة «المسوقين» مع صلاحيات العرض/التعديل على <code>Property</code>، <code>PropertySmartLink</code>، <code>PropertyLead</code>، و<code>PropertyRequest</code> المسندة له.</p>
+        </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="md-card">
+        <div class="md-card__title">مؤشرات الأداء <small>الفترة: {{ period }}</small></div>
+        <div class="md-kpi-grid">
+            <div class="md-kpi">
+                <span class="label">روابط ذكية (نطاق الفترة)</span>
+                <strong>{{ stats.total_links }}</strong>
+            </div>
+            <div class="md-kpi">
+                <span class="label">مشاهدات الروابط</span>
+                <strong>{{ stats.total_views|intcomma }}</strong>
+            </div>
+            <div class="md-kpi">
+                <span class="label">عملاء / طلبات سريعة</span>
+                <strong>{{ stats.total_leads }}</strong>
+                <span class="sub">{{ stats.conversion_rate }} تحويل</span>
+            </div>
+            <div class="md-kpi">
+                <span class="label">مهام مسندة (إجمالي)</span>
+                <strong>{{ stats.assigned_tasks_total|default:0 }}</strong>
+            </div>
+        </div>
+    </div>
+
+        <!-- طلبات مسندة -->
+        <div class="md-card" id="assignments-section">
+            <div class="md-card__title">
+                <i class="fas fa-tasks"></i> المهام المسندة
+                <small>طلبات بحث عن عقار أو تسويق عقار — من الإدارة (حقل «مسند إلى»)</small>
+            </div>
+            {% if stats.assigned_tasks %}
+            <div class="md-table-wrap">
+                <table class="md-table">
+                    <thead>
+                        <tr>
+                            <th>نوع المهمة</th>
+                            <th>العميل / المالك</th>
+                            <th>التفاصيل</th>
+                            <th>الحالة</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in stats.assigned_tasks %}
+                        <tr>
+                            <td><span class="md-badge md-badge--muted" style="white-space:nowrap;">{{ t.kind_label }}</span></td>
+                            <td>
+                                <div style="font-weight:700;">{{ t.name }}</div>
+                                <div style="font-size:0.78rem;color:var(--md-muted);">{{ t.phone }}</div>
+                            </td>
+                            <td style="font-size:0.88rem;">{{ t.detail }}</td>
+                            <td><span class="md-badge md-badge--muted">{{ t.status }}</span></td>
+                            <td><a class="md-btn" style="padding:4px 10px;font-size:0.75rem;" href="{{ t.change_url }}">فتح</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if stats.assigned_tasks_total > 15 %}
+            <p class="mb-0 mt-2" style="font-size:0.82rem;color:var(--md-muted);">عرض أحدث 15 من أصل {{ stats.assigned_tasks_total }}.
+                <a href="{{ admin_urls.requests_assigned_to_marketer }}" style="color:var(--md-gold-bright);">طلبات العقار</a>
+                ·
+                <a href="{{ admin_urls.offers_assigned_to_marketer }}" style="color:var(--md-gold-bright);">طلبات التسويق</a>
+            </p>
+            {% endif %}
+            {% else %}
+            <p style="color:var(--md-muted);margin:0;">لا توجد مهام مسندة حالياً. يُسند المسوّق من قائمة «طلبات العقار» أو «طلبات تسويق العقارات» عبر حقل «مسند إلى».</p>
+            {% endif %}
+        </div>
+
+    <!-- روابط ذكية -->
+    <div class="md-card" id="properties-section">
+        <div class="md-card__title"><i class="fas fa-link"></i> روابطك الذكية والبروشورات</div>
+        <p style="font-size:0.86rem;color:var(--md-muted);margin:-8px 0 14px;">العقارات المنشورة التي أنشأت لها رابطاً ذكياً. انسخ الرابط الكامل للمشاركة.</p>
+        <div class="md-table-wrap">
+            <table class="md-table">
+                <thead>
+                    <tr>
+                        <th>العقار</th>
+                        <th>النوع</th>
+                        <th>المشاهدات</th>
+                        <th>الحالة</th>
+                        <th>نسخ / عرض</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in stats.available_properties %}
+                        {% if p.has_link %}
+                        <tr>
+                            <td>{{ p.title }}</td>
+                            <td>{{ p.property_type }}</td>
+                            <td><strong>{{ p.views|default:0 }}</strong></td>
+                            <td><span class="md-badge md-badge--ok">نشط</span></td>
+                            <td>
+                                <a href="/s/{{ p.token }}/" target="_blank" class="md-btn" style="padding:4px 10px;font-size:0.75rem;display:inline-block;margin-left:6px;">عرض</a>
+                                <button type="button" class="md-copy-btn" data-copy-url="{{ request.scheme }}://{{ request.get_host }}/s/{{ p.token }}/">نسخ</button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% empty %}
+                    <tr><td colspan="5" style="text-align:center;color:var(--md-muted);">لا توجد بيانات.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not stats.available_properties %}
+        <p class="mb-0" style="color:var(--md-muted);">لا توجد عقارات منشورة في القائمة.</p>
+        {% elif not stats.has_any_brochure %}
+        <p class="mb-0" style="color:var(--md-muted);">لم تنشئ روابط ذكية بعد. استخدم زر <strong>«إضافة رابط ذكي لي»</strong> أعلاه.</p>
+        {% endif %}
+    </div>
+
+    {% if can_view_team_analytics and team_overview %}
+    <div class="md-card">
+        <div class="md-card__title"><i class="fas fa-users"></i> نظرة على فريق المسوّقين <small>للإدارة والمدير المشارك</small></div>
+        <div class="md-table-wrap">
+            <table class="md-table md-team-table">
+                <thead>
+                    <tr>
+                        <th>المسوّق</th>
+                        <th>روابط</th>
+                        <th>مشاهدات</th>
+                        <th>عملاء</th>
+                        <th>تحويل</th>
+                        <th>طلبات مسندة (جديد/عمل/مغلق)</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in team_overview.marketers %}
+                    <tr>
+                        <td class="name-cell">
+                            {{ row.user.get_full_name|default:row.user.username }}
+                            <div style="font-size:0.75rem; color:var(--md-muted); font-weight:500;">{{ row.user.email|default:"" }}</div>
+                        </td>
+                        <td>{{ row.links }}</td>
+                        <td>{{ row.views|intcomma }}</td>
+                        <td>{{ row.leads }}</td>
+                        <td>{{ row.conv_rate }}</td>
+                        <td>
+                            <span class="md-badge md-badge--muted">جديد: {{ row.tasks.new }}</span>
+                            <span class="md-badge md-badge--muted">عمل: {{ row.tasks.working }}</span>
+                            <span class="md-badge md-badge--ok">مغلق: {{ row.tasks.done }}</span>
+                            <small style="color:var(--md-muted);"> / {{ row.tasks.total }}</small>
+                        </td>
+                        <td style="white-space:normal;">
+                            <a class="md-btn" style="padding:4px 10px;font-size:0.75rem;" href="?user_id={{ row.user.id }}&period={{ period|urlencode }}">لوحة</a>
+                            {% if user.is_superuser %}
+                            <a class="md-btn" style="padding:4px 10px;font-size:0.75rem;" href="/admin/auth/user/{{ row.user.id }}/change/">مستخدم</a>
+                            {% endif %}
+                            {% if user.is_superuser and impersonate_start_url %}
+                            <form method="post" action="{{ impersonate_start_url }}" style="display:inline;margin:4px 0 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ row.user.id }}" />
+                                <button type="submit" class="md-btn" style="padding:4px 10px;font-size:0.75rem;border-color:#c5a059;color:#e0c38c;" title="دخول كهذا المسوق">دخول كـ</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size:0.85rem;color:var(--md-muted);margin:12px 0 0;">
+            إجمالي الفريق: {{ team_overview.team_stats.total_links }} روابط، {{ team_overview.team_stats.total_views|intcomma }} مشاهدة، {{ team_overview.team_stats.total_leads }} عميل، متوسط تحويل: {{ team_overview.team_stats.avg_conv_rate }}
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+(function() {
+  function keepMarketerSidebarVisible() {
+    if (!document.body.classList.contains('jodah-marketer-dashboard')) return;
+    document.body.classList.remove('sidebar-collapse');
+    if (window.matchMedia('(min-width: 992px)').matches) {
+      document.body.classList.add('sidebar-open');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', keepMarketerSidebarVisible);
+  window.addEventListener('load', function() {
+    setTimeout(keepMarketerSidebarVisible, 50);
+    setTimeout(keepMarketerSidebarVisible, 400);
+  });
+})();
+(function() {
+  document.querySelectorAll('.md-copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var url = this.getAttribute('data-copy-url');
+      if (!url) return;
+      navigator.clipboard.writeText(url).then(function() {
+        var t = btn.textContent;
+        btn.textContent = 'تم النسخ';
+        setTimeout(function() { btn.textContent = t; }, 1600);
+      }).catch(function() {
+        prompt('انسخ الرابط:', url);
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

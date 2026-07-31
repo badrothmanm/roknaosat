@@ -1,0 +1,387 @@
+{% extends "admin/base_site.html" %}
+{% load static humanize math_extras %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /*
+     * صفحة البورصة: نفس رموز لوحة التحكم الرئيسية (admin_custom.css — var(--jm-*))
+     * دون إعادة تعريف .kpi-card العام حتى لا تتعارض مع الصفحة الرئيسية.
+     */
+    .srem-market-dashboard .srem-stat-label {
+        font-size: 0.85rem;
+        color: var(--jm-text-subtle);
+    }
+    .srem-market-dashboard .srem-city-kpi {
+        cursor: default !important;
+    }
+    .srem-market-dashboard .srem-city-kpi:hover {
+        transform: none !important;
+        border-color: var(--jm-border-subtle) !important;
+        box-shadow: var(--jm-shadow-sm) !important;
+        background: var(--jm-navy-light) !important;
+    }
+    .srem-market-dashboard .srem-note-banner {
+        max-width: 900px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--jm-border);
+        background: rgba(197, 160, 89, 0.08);
+        color: var(--jm-text-muted);
+        font-size: 0.875rem;
+        line-height: 1.55;
+    }
+    .srem-market-dashboard .srem-pill-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid var(--jm-border);
+        background: rgba(197, 160, 89, 0.12);
+        color: var(--jm-gold-bright);
+    }
+    .srem-market-dashboard .price-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 6px;
+    }
+    .srem-market-dashboard .price-table th {
+        color: var(--jm-gold-bright);
+        padding: 12px 10px;
+        text-align: right;
+        border-bottom: 2px solid var(--jm-border);
+        font-size: 0.88rem;
+        background: transparent;
+    }
+    .srem-market-dashboard .price-table td {
+        background: rgba(255, 255, 255, 0.04);
+        padding: 12px 10px;
+        font-size: 0.9rem;
+        color: var(--jm-text-muted);
+        border: none;
+    }
+    .srem-market-dashboard .price-table tr:hover td {
+        background: rgba(255, 255, 255, 0.07);
+    }
+    .srem-market-dashboard .price-value {
+        font-weight: 700;
+        color: var(--jm-gold-bright);
+    }
+    .srem-market-dashboard .type-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-block;
+        background: rgba(197, 160, 89, 0.15);
+        color: var(--jm-gold-bright);
+        border: 1px solid var(--jm-border-subtle);
+    }
+    .srem-market-dashboard .srem-hint-box {
+        background: rgba(197, 160, 89, 0.1);
+        border: 1px solid var(--jm-border);
+        border-radius: 10px;
+        line-height: 1.75;
+    }
+    .srem-market-dashboard .srem-hint-box-muted {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--jm-border-subtle);
+        border-radius: 10px;
+        line-height: 1.7;
+        color: var(--jm-text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if srem_disabled %}
+<div class="container-fluid srem-market-dashboard" dir="rtl">
+    <h2 class="saas-card-title mb-3">مؤشرات البورصة العقارية</h2>
+    {% if srem_sync_banner %}
+    <div class="alert alert-{{ srem_sync_banner.level }} mb-3" role="alert" style="max-width:900px;">
+        {{ srem_sync_banner.text }}
+    </div>
+    {% endif %}
+    <div class="srem-note-banner" style="max-width:640px;">
+        <p class="mb-2"><strong>الخدمة معطّلة.</strong> تم ضبط <code>SREM_ENABLED=False</code> في الإعدادات.</p>
+        <p class="mb-0 small">لإعادة التفعيل أضف في البيئة: <code>SREM_ENABLED=True</code> ثم أعد تشغيل التطبيق.</p>
+    </div>
+    <p class="mt-3"><a href="{% url 'admin:index' %}" class="btn-outline" style="display:inline-block;padding:8px 16px;border-radius:8px;text-decoration:none;">← العودة للوحة التحكم</a></p>
+</div>
+{% else %}
+<div class="container-fluid srem-market-dashboard saas-dashboard" dir="rtl">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h1 class="saas-card-title mb-0" style="font-size:1.25rem;">
+            مؤشرات البورصة العقارية — اليوم
+        </h1>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="srem-pill-badge">لقطات يومية فقط</span>
+            <a href="{% url 'admin:market_realestateindex_refresh_now' %}" class="btn btn-primary btn-sm">
+                تحديث الآن
+            </a>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        <a href="?section=results" class="btn btn-sm {% if selected_section == 'results' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            النتائج (الصفقات)
+        </a>
+        <a href="?section=trends" class="btn btn-sm {% if selected_section == 'trends' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            تحليل التريند
+        </a>
+        <a href="?section=all" class="btn btn-sm {% if selected_section == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            عرض الكل
+        </a>
+    </div>
+
+    {% if srem_sync_banner %}
+    <div class="alert alert-{{ srem_sync_banner.level }} mb-3" role="alert" style="max-width:900px;">
+        {{ srem_sync_banner.text }}
+    </div>
+    {% endif %}
+
+    {% if period_mode_note %}
+    <p class="srem-note-banner mb-3">{{ period_mode_note }}</p>
+    {% endif %}
+
+    {% if dashboard_data_note %}
+    <p class="srem-stat-label small mb-3 px-1" style="max-width:900px;line-height:1.65;">
+        <i class="fas fa-shield-alt" style="color:var(--jm-gold-bright);"></i> {{ dashboard_data_note }}
+        مدن العرض: <strong style="color:var(--jm-text-main);">{{ dashboard_cities|join:"، " }}</strong> — يمكن إضافة مدن لاحقاً عبر المتغير <code>SREM_DASHBOARD_CITIES</code> في الإعدادات (مفصولة بفاصلة).
+        {% if city_filter_mismatch %}
+        <br><span style="color:var(--jm-gold-bright);"><i class="fas fa-exclamation-triangle"></i> تظهر جميع المدن المخزّنة لأن أسماء المدن في البيانات لا تطابق <code>SREM_DASHBOARD_CITIES</code> — صحّح التطابق أو أعد المزامنة.</span>
+        {% endif %}
+    </p>
+    {% endif %}
+
+    {% if selected_section == 'all' %}
+    <div class="row mb-4 justify-content-center">
+        {% for card in city_cards %}
+        <div class="col-12 {% if city_cards|length == 1 %}col-lg-8 col-xl-6{% else %}col-md-6 col-lg-4{% endif %} mb-3">
+            <div class="kpi-card srem-city-kpi h-100">
+                <div class="kpi-header">
+                    <div class="kpi-title" style="color:var(--jm-text-main);font-size:1rem;">{{ card.city }}</div>
+                </div>
+                {% if card.rows_count %}
+                <div class="srem-stat-label mb-2" style="font-size:0.75rem;">{{ card.rows_count }} حي في اللقطة</div>
+                {% endif %}
+                <div class="kpi-value">{{ card.total_traded_area_sqm|floatformat:0 }}</div>
+                <div class="srem-stat-label">إجمالي المساحة المتداولة (م²)</div>
+                <hr style="border-color:var(--jm-border-subtle);opacity:0.6;margin:12px 0;">
+                <div class="srem-stat-label">إجمالي عدد الصفقات</div>
+                <div style="color:var(--jm-text-main);font-weight:600;">{{ card.total_deals|default:0|intcomma }}</div>
+                <div class="srem-stat-label">إجمالي القيمة</div>
+                <div style="color:var(--jm-text-main);font-weight:600;">{{ card.total_value|floatformat:0 }} ريال</div>
+                <div class="srem-stat-label mt-2">متوسط سعر المتر (محسوب للمدينة)</div>
+                <div style="color:var(--jm-text-main);font-weight:600;">{{ card.avg_price|floatformat:0 }} ريال / م²</div>
+                <p class="srem-stat-label mt-2 mb-0" style="font-size:0.72rem;line-height:1.5;opacity:0.9;">
+                    مجموع الأحياء الظاهرة في مؤشر الترند بالبورصة — ليس إجمالي كل صفقات المدينة.
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if selected_section == 'all' %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="saas-card h-100">
+                <h6 class="saas-card-title mb-3" style="font-size:1rem;">🔥 أفضل حي</h6>
+                {% if best_trend %}
+                    <p class="mb-2" style="color:var(--jm-text-main);font-weight:700;">{{ best_trend.area }}</p>
+                    <strong style="color:var(--jm-alert-success);font-size:1.25rem;">+{{ best_trend.trend }}%</strong>
+                {% else %}
+                    <p class="srem-stat-label mb-0">—</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="saas-card h-100">
+                <h6 class="saas-card-title mb-3" style="font-size:1rem;">⚠️ أسوأ حي</h6>
+                {% if worst_trend %}
+                    <p class="mb-2" style="color:var(--jm-text-main);font-weight:700;">{{ worst_trend.area }}</p>
+                    <strong style="color:var(--jm-alert-error);font-size:1.25rem;">{{ worst_trend.trend }}%</strong>
+                {% else %}
+                    <p class="srem-stat-label mb-0">—</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="saas-card h-100">
+                <h6 class="saas-card-title mb-3" style="font-size:1rem;">📊 حالة السوق</h6>
+                {% if rising %}
+                    <p style="color:var(--jm-alert-success);font-weight:700;font-size:1.2rem;">🟢 صاعد</p>
+                {% elif falling %}
+                    <p style="color:var(--jm-alert-error);font-weight:700;font-size:1.2rem;">🔴 هابط</p>
+                {% else %}
+                    <p style="color:var(--jm-text-muted);font-weight:700;font-size:1.2rem;">➖ مستقر</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if selected_section == 'trends' or selected_section == 'all' %}
+    <div class="saas-card mb-4">
+        <h3 class="saas-card-title mb-2" style="font-size:1.1rem;">
+            <i class="fas fa-chart-line" style="color:var(--jm-gold-bright);"></i> نظرة على السوق العام (Market Context)
+        </h3>
+        <p class="srem-stat-label small mb-3">هذه البيانات تعكس أحياء مؤشر الترند في {{ dashboard_cities|join:"، " }} (وليس كل الأحياء) لمساعدتك في توجيه العملاء.</p>
+        <hr style="border-color:var(--jm-border-subtle);opacity:0.5;">
+        <div class="row g-3">
+            <div class="col-lg-8 col-md-7">
+                <h4 class="saas-card-title mb-3" style="font-size:1rem;">🔥 تحليل التريند</h4>
+                <style>
+                    .srem-trends-grid {
+                        display: grid;
+                        grid-template-columns: 1.4fr 0.8fr 1fr; /* الحي | التغير | الحالة */
+                        gap: 8px;
+                        align-items: center;
+                        width: 100%;
+                    }
+                    .srem-trends-grid .hdr {
+                        color: var(--jm-gold-bright);
+                        font-weight: 800;
+                        font-size: 0.9rem;
+                        padding: 10px 12px;
+                        border-bottom: 2px solid var(--jm-border);
+                    }
+                    .srem-trends-grid .cell {
+                        background: rgba(255,255,255,0.04);
+                        padding: 10px 12px;
+                        border-radius: 10px;
+                        color: var(--jm-text-muted);
+                        overflow: hidden;
+                    }
+                    .srem-trends-grid .area {
+                        color: var(--jm-text-main);
+                        font-weight: 800;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                    .srem-trends-grid .trend {
+                        font-weight: 900;
+                        color: var(--jm-gold-bright);
+                        direction: ltr; /* يحافظ على شكل +0.0% */
+                        text-align: center;
+                    }
+                    .srem-trends-grid .label {
+                        font-weight: 700;
+                        text-align: center;
+                    }
+                    @media (max-width: 576px) {
+                        .srem-trends-grid {
+                            grid-template-columns: 1fr;
+                        }
+                        .srem-trends-grid .hdr { display: none; }
+                        .srem-trends-grid .cell {
+                            display: grid;
+                            grid-template-columns: 1fr auto;
+                            gap: 8px;
+                        }
+                        .srem-trends-grid .label { grid-column: 1 / -1; text-align: right; }
+                    }
+                </style>
+
+                <div class="srem-trends-grid" dir="rtl">
+                    <div class="hdr">الحي</div>
+                    <div class="hdr" style="text-align:center;">التغير</div>
+                    <div class="hdr" style="text-align:center;">الحالة</div>
+
+                    {% for item in all_trends %}
+                        <div class="cell area">{{ item.area }}</div>
+                        <div class="cell trend">{% if item.trend > 0 %}+{% endif %}{{ item.trend }}%</div>
+                        <div class="cell label">{{ item.label }}</div>
+                    {% empty %}
+                        <div class="cell" style="grid-column: 1 / -1; text-align:center;">
+                            لا توجد بيانات — تحتاج لقطتين زمنيتين على الأقل.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="kpi-card srem-city-kpi h-100" style="border-right:4px solid var(--jm-gold);">
+                    <h3 class="saas-card-title mb-3" style="font-size:1rem;">
+                        <i class="fas fa-robot" style="color:var(--jm-gold-bright);"></i> سياق البيانات
+                    </h3>
+                    <div class="small srem-stat-label" style="line-height:1.75;">
+                        {% if indices_date %}
+                        <p class="mb-2"><strong style="color:var(--jm-text-main);">تاريخ لقطة الجدول:</strong> {{ indices_date }}</p>
+                        {% endif %}
+                        <p class="mb-0">تقرير ذكاء نصي غير مفعّل في النموذج؛ تفاصيل اللقطات والمزامنة من زر «تحديث الآن» أعلاه.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if selected_section == 'results' or selected_section == 'all' %}
+    <div class="saas-card mb-4">
+        <h3 class="saas-card-title mb-3" style="font-size:1.1rem;">
+            <i class="fas fa-map-marked-alt" style="color:var(--jm-gold-bright);"></i> تحليل الصفقات حسب الحي والنوع
+        </h3>
+        {% if indices_data_note %}
+        <p class="small mb-3 p-3 srem-hint-box">
+            <strong><i class="fas fa-database"></i> مصدر البيانات:</strong> {{ indices_data_note }}
+        </p>
+        {% endif %}
+        <p class="small mb-3 p-3 srem-hint-box-muted">
+            <strong style="color:var(--jm-text-main);"><i class="fas fa-info-circle" style="color:var(--jm-gold-bright);"></i> كيف تُقرأ الأرقام:</strong><br>
+            • <strong>متوسط سعر المتر</strong> = ريال لكل م² (وليس سعر صفقة واحدة).<br>
+            • <strong>إجمالي القيمة</strong> ≈ المساحة المتداولة × متوسط سعر المتر (عمود التحقق).<br>
+            • عمود النوع «الكل» = إجمالي الحي كما تعيده <strong>بورصة وزارة العدل</strong>.
+        </p>
+        <div class="table-responsive">
+            <table class="price-table">
+                <thead>
+                    <tr>
+                        <th>الحي</th>
+                        <th>النوع</th>
+                        <th>عدد الصفقات</th>
+                        <th>المساحة المتداولة<br><span class="fw-normal small">(م²)</span></th>
+                        <th>متوسط سعر المتر<br><span class="fw-normal small">(ر.س/م²)</span></th>
+                        <th>تحقق<br><span class="fw-normal small">(مساحة × سعر/م²)</span></th>
+                        <th>إجمالي القيمة المحفوظة<br><span class="fw-normal small">(ر.س)</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in indices %}
+                    {% with implied=item.avg_price_per_m2|mul:item.traded_area_sqm %}
+                    <tr>
+                        <td><strong style="color:var(--jm-text-main);">{{ item.neighborhood }}</strong></td>
+                        <td>
+                            {% if item.property_type == "all" %}
+                            <span class="type-badge">الكل — بورصة الوزارة</span>
+                            {% elif item.property_type == "أرض" or item.property_type == "land" %}
+                            <span class="type-badge">أرض</span>
+                            {% elif item.property_type == "شقة" or item.property_type == "apartment" %}
+                            <span class="type-badge">شقة</span>
+                            {% elif item.property_type == "فيلا" or item.property_type == "villa" %}
+                            <span class="type-badge">فيلا</span>
+                            {% else %}
+                            <span class="type-badge">{{ item.get_property_type_display|default:item.property_type }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-secondary">{{ item.num_deals|default:0|intcomma }}</td>
+                        <td>{{ item.traded_area_sqm|floatformat:0|intcomma }}</td>
+                        <td class="price-value">{{ item.avg_price_per_m2|floatformat:0|intcomma }}</td>
+                        <td style="color:var(--jm-alert-success);font-size:0.85rem;">{{ implied|floatformat:0|intcomma }}</td>
+                        <td>{{ item.total_value_sar|floatformat:0|intcomma }}</td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 srem-stat-label">لا توجد بيانات — اضغط «تحديث الآن» ثم تأكد من نجاح مزامنة API البورصة.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

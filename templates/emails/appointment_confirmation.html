@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>تأكيد حجز موعد</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Tahoma,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:24px 8px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="620" cellspacing="0" cellpadding="0" style="max-width:620px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
+                    <tr>
+                        <td style="background:#0b1b3a;padding:20px 24px;color:#fff;">
+                            <h2 style="margin:0 0 6px;font-size:22px;color:#c9a24a;">تأكيد موعد المعاينة</h2>
+                            <p style="margin:0;opacity:0.9;">مرحباً {{ appointment.client_name }}، تم تسجيل موعدك بنجاح.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:22px 24px;color:#111827;font-size:15px;line-height:1.8;">
+                            <p style="margin:0 0 12px;"><strong>تفاصيل الموعد:</strong></p>
+                            <ul style="margin:0 0 16px;padding-right:18px;">
+                                <li>العقار: {{ property.property_type }} في {{ property.district }}</li>
+                                <li>التاريخ: {{ appointment.booking_date|date:"Y/m/d" }}</li>
+                                <li>الوقت: {{ appointment.booking_time|time:"h:i A" }}</li>
+                            </ul>
+                            <p style="margin:0 0 18px;color:#374151;">
+                                إذا رغبت بإلغاء الموعد يمكنك الضغط على الزر التالي:
+                            </p>
+                            <p style="margin:0 0 18px;">
+                                <a href="{{ cancel_url }}" style="display:inline-block;background:#dc2626;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:700;">
+                                    إلغاء الموعد
+                                </a>
+                            </p>
+                            <p style="margin:0;color:#6b7280;font-size:13px;">
+                                في حال لم يعمل الزر، استخدم هذا الرابط مباشرة:<br>
+                                <a href="{{ cancel_url }}" style="color:#2563eb;">{{ cancel_url }}</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+

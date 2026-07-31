@@ -1,0 +1,276 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="no-js">
+<script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ company_name }} | عقارات جدة{% endblock %}</title>
+
+    <meta name="description"
+        content="{% block meta_description %}{{ company_name_full }} — شريكك الموثوق في جدة. فرص سكنية وتجارية مختارة بهدوء واحتراف. رخصة فال رقم 1200021644{% endblock %}">
+
+    <meta name="keywords"
+        content="عقارات جدة, {{ company_name }}, الركن الأوسط للعقارات, تسويق عقاري جدة, فلل للبيع جدة, شقق للإيجار جدة, رخصة فال">
+    <meta name="author" content="{{ company_name }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{% block og_title %}{{ company_name }} | عقارات جدة{% endblock %}">
+    <meta property="og:description"
+        content="{% block og_description %}{{ company_name_full }} — شريكك الموثوق في جدة. رخصة فال رقم 1200021644{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'img/logo.png' %}{% endblock %}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta property="twitter:title" content="{% block twitter_title %}{{ company_name }} | عقارات جدة{% endblock %}">
+    <meta property="twitter:description"
+        content="{% block twitter_description %}{{ company_name_full }} — شريكك الموثوق في جدة. رخصة فال رقم 1200021644{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{% static 'img/logo.png' %}{% endblock %}">
+
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="shortcut icon" href="{% static 'img/logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/logo.png' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.4.1">
+    <link rel="stylesheet" href="{% static 'css/nav_mobile.css' %}?v=2.5.1">
+    <link rel="stylesheet" href="{% static 'css/brand-rokna.css' %}?v=2.12.0">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "RealEstateAgent",
+      "name": "{{ company_name_full }}",
+      "image": "{% static 'img/logo.png' %}",
+      "@id": "",
+      "url": "{{ request.scheme }}://{{ request.get_host }}",
+      "telephone": "+{{ company_whatsapp }}",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "حي الشاطئ",
+        "addressLocality": "جدة",
+        "postalCode": "21561",
+        "addressCountry": "SA"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 21.5833,
+        "longitude": 39.1667
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "opens": "09:00",
+        "closes": "22:00"
+      },
+      "sameAs": []
+    }
+    </script>
+
+    {% block head %}{% endblock %}
+</head>
+
+<body id="top" class="{% if site_ticker and site_ticker.is_enabled and site_ticker.message %}has-site-ticker{% endif %}" style="--ticker-h: {% if site_ticker and site_ticker.is_enabled and site_ticker.message %}40px{% else %}0px{% endif %};">
+    {% if site_ad_banner %}
+    <div id="site-ad-banner-config" hidden
+         data-enabled="{% if site_ad_banner.is_enabled %}1{% else %}0{% endif %}"
+         data-insert-after="{{ site_ad_banner.insert_after|default:3 }}"
+         data-custom-image="{% if site_ad_banner.has_custom_image %}1{% else %}0{% endif %}"
+         data-image-url="{{ site_ad_banner.image_url }}"
+         data-logo-url="{% static 'img/logo-banner.png' %}?v=2"
+         data-alt="{{ site_ad_banner.alt_text|default:'الركن الأوسط للعقارات'|escape }}"
+         data-link-url="{{ site_ad_banner.link_url|default:'' }}"></div>
+    {% endif %}
+
+    {% include 'partials/header.html' %}
+    {% include 'partials/ticker.html' %}
+
+    <main>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include 'partials/footer.html' %}
+
+    {% include 'partials/smart_wizard.html' %}
+
+    <!-- Global Success Modal -->
+    <div id="global-success-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button onclick="closeGlobalModal()" class="modal-close" aria-label="إغلاق">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="modal-icon">
+                <i class="fas fa-check"></i>
+            </div>
+
+            <h2 id="modal-title" class="modal-title">تم استلام استفسارك بنجاح</h2>
+            <p id="modal-message" class="modal-body">
+                فريق {{ company_name }} سيقوم بالرد عليك في أقرب وقت ممكن.
+            </p>
+
+            <div class="modal-actions">
+                <a id="modal-whatsapp-btn" href="#" target="_blank" class="btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                    <span id="modal-wa-text">تواصل عبر الواتساب الآن</span>
+                </a>
+                <button onclick="closeGlobalModal()" class="btn-secondary">
+                    العودة للموقع
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #global-success-modal.active {
+            display: flex !important;
+        }
+
+        #global-success-modal.active {
+            display: flex !important;
+        }
+    </style>
+
+    <!-- Request Property Modal -->
+    <div id="request-property-modal" class="modal"
+        style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter:blur(5px); overflow-y: auto;">
+        <div class="modal-content"
+            style="background:white; margin: 3% auto; padding:40px; border-radius:20px; width:95%; max-width:800px; position:relative; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-top: 5px solid var(--brand-blue, #1B4F9C);">
+            <span onclick="closeRequestModal()"
+                style="position:absolute; left:25px; top:20px; font-size:32px; cursor:pointer; color:#94a3b8; transition:0.3s;">&times;</span>
+
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="color: #0f172a; font-size: 1.8rem; font-weight: 700; margin-bottom: 10px;">نموذج طلب عقار
+                </h3>
+                <div style="width: 60px; height: 3px; background: var(--brand-blue, #1B4F9C); margin: 0 auto; border-radius: 2px;"></div>
+            </div>
+
+            <form id="request-property-modal-form" class="request-property-form" method="post" action="/api/request-property/" novalidate>
+                {% csrf_token %}
+                <div id="request-property-modal-errors" class="req-form-errors" hidden></div>
+                {% include "partials/request_property_fields.html" %}
+                <div class="form-group" style="margin-top: 1.25rem;">
+                    <button type="submit" class="btn"
+                        style="width: 100%; background: var(--brand-blue, #1B4F9C); color: white; padding: 18px; font-weight: bold; font-size: 1.2rem; border: none; border-radius: 12px; cursor: pointer;">
+                        إرسال الطلب <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        @media (max-width: 768px) {
+            .grid-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        function openRequestModal() {
+            document.getElementById('request-property-modal').style.display = 'block';
+        }
+        function closeRequestModal() {
+            document.getElementById('request-property-modal').style.display = 'none';
+        }
+
+        function closeGlobalModal() {
+            const modal = document.getElementById('global-success-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+        // Close modal if clicked outside
+        window.onclick = function (event) {
+            const reqModal = document.getElementById('request-property-modal');
+            const successModal = document.getElementById('global-success-modal');
+            if (event.target == reqModal) {
+                closeRequestModal();
+            }
+            if (event.target == successModal) {
+                closeGlobalModal();
+            }
+        }
+    </script>
+
+
+    <a href="#top" id="backToTop"
+        style="position: fixed; bottom: 20px; left: 20px; background: var(--gold); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; opacity: 0.7; z-index: 100;">
+        <i class="fas fa-chevron-up"></i>
+    </a>
+
+    <script>
+        window.APPS_SCRIPT_URL = "{{ apps_script_url }}";
+        window.APPS_SCRIPT_KEY = "{{ apps_script_key }}";
+        window.CRM_URL = "{{ crm_url }}";
+        window.CRM_KEY = "{{ crm_key }}";
+    </script>
+
+    <script src="{% static 'js/main.js' %}?v=13"></script>
+    <script src="{% static 'js/behavioral_tracker.js' %}?v=4"></script>
+
+    <style>
+        .vip-glow {
+            box-shadow: 0 0 15px rgba(27, 79, 156, 0.45);
+            border: 1px solid var(--gold) !important;
+            animation: pulse-vip 2s infinite;
+        }
+        @keyframes pulse-vip {
+            0% { box-shadow: 0 0 5px rgba(27, 79, 156, 0.35); }
+            50% { box-shadow: 0 0 20px rgba(27, 79, 156, 0.55); }
+            100% { box-shadow: 0 0 5px rgba(27, 79, 156, 0.35); }
+        }
+    </style>
+</body>
+
+</html>

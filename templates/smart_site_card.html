@@ -1,0 +1,658 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company_name }} | منصة الروابط السريعة</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-light: #1e293b;
+            --gold: #1B4F9C;
+            --gold-light: #9DB7E0;
+            --white: #ffffff;
+            --gray-light: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-light);
+            background-image: radial-gradient(circle at top right, rgba(197, 160, 89, 0.1), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(15, 23, 42, 0.05), transparent 40%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            color: var(--primary-dark);
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+            text-align: center;
+            animation: fadeInBody 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeInBody {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Profile & Logo Section */
+        .profile-container {
+            margin-bottom: 35px;
+        }
+
+        .logo-box {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.3), 0 0 0 6px var(--white);
+            position: relative;
+        }
+
+        .logo-box i {
+            color: var(--gold);
+            font-size: 3rem;
+        }
+
+        .company-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .company-subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Links Section */
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 18px 25px;
+            background: var(--white);
+            color: var(--primary-dark);
+            text-decoration: none;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: slideUpBtn 0.6s ease backwards;
+        }
+
+        .link-btn:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .link-btn:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .link-btn:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .link-btn:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .link-btn:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes slideUpBtn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-btn i {
+            position: absolute;
+            right: 25px;
+            font-size: 1.4rem;
+        }
+
+        /* Specific Button Styles */
+        .btn-offers {
+            background: linear-gradient(135deg, var(--gold), #163F7D);
+            color: var(--white);
+            box-shadow: 0 10px 15px -3px rgba(197, 160, 89, 0.4);
+        }
+
+        .btn-offers:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 20px -3px rgba(197, 160, 89, 0.5);
+        }
+
+        .btn-request {
+            background: var(--primary-dark);
+            color: var(--white);
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.3);
+        }
+
+        .btn-request:hover {
+            transform: translateY(-3px);
+            background: #1e293b;
+        }
+
+        .btn-submit-prop {
+            background: var(--white);
+            color: var(--primary-dark);
+            border: 2px solid var(--primary-dark);
+            box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
+        }
+
+        .btn-submit-prop:hover {
+            transform: translateY(-3px);
+            background: var(--primary-dark);
+            color: var(--white);
+        }
+
+        .btn-whatsapp {
+            border: 2px solid #25D366;
+            color: #25D366;
+        }
+
+        .btn-whatsapp i {
+            color: #25D366;
+        }
+
+        .btn-whatsapp:hover {
+            background: #25D366;
+            color: var(--white);
+        }
+
+        .btn-whatsapp:hover i {
+            color: var(--white);
+        }
+
+        .btn-phone {
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .btn-phone i {
+            color: #3b82f6;
+        }
+
+        .btn-phone:hover {
+            background: #3b82f6;
+            color: var(--white);
+        }
+
+        .btn-phone:hover i {
+            color: var(--white);
+        }
+
+        .btn-instagram {
+            border: 2px solid #E1306C;
+            color: #E1306C;
+        }
+
+        .btn-instagram i {
+            background: -webkit-linear-gradient(#f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-instagram:hover {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            color: var(--white);
+            border-color: transparent;
+        }
+
+        .btn-instagram:hover i {
+            -webkit-text-fill-color: var(--white);
+        }
+
+        /* Request Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--white);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 24px;
+            padding: 30px;
+            transform: translateY(50px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: translateY(0) scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #f1f5f9;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: #e2e8f0;
+            color: #ef4444;
+        }
+
+        .modal-title {
+            font-family: 'Cairo', sans-serif;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+            background: #f8fafc;
+            color: var(--primary-dark);
+        }
+
+        .form-control:focus {
+            border-color: var(--gold);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-dark);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.2);
+        }
+
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .success-msg i {
+            color: #10b981;
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        /* Floating Share Action */
+        img.share-floating {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary-dark);
+            transition: 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+        }
+
+        .share-floating-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary-dark);
+            transition: 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+            z-index: 10;
+        }
+
+        .share-floating-btn:hover {
+            background: var(--gold);
+            color: white;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card-container">
+
+        <button class="share-floating-btn" onclick="sharePage()" title="مشاركة">
+            <i class="fas fa-share-nodes"></i>
+        </button>
+
+        <!-- Profile Info -->
+        <div class="profile-container">
+            <div class="logo-box">
+                <i class="fas fa-building"></i>
+            </div>
+            <h1 class="company-title">{{ company_name }}</h1>
+            <p class="company-subtitle">بوابتكم لأرقى السكن والاستثمار العقاري بجدة</p>
+        </div>
+
+        <!-- Links -->
+        <div class="links-container">
+            <a href="{% url 'listings:home' %}#offers" class="link-btn btn-offers">
+                <i class="fas fa-home"></i> العروض العقارية
+            </a>
+
+            <a href="#" class="link-btn btn-request" onclick="openRequestModal(event)">
+                <i class="fas fa-bolt"></i> اكتب طلبك العقاري
+            </a>
+
+            <a href="{% url 'listings:submit-property' %}" class="link-btn btn-submit-prop">
+                <i class="fas fa-home"></i> أعرض عقارك
+            </a>
+
+            <a href="https://wa.me/966XXXXXXXXX" target="_blank" class="link-btn btn-whatsapp">
+                <i class="fab fa-whatsapp"></i> تواصل عبر واتساب
+            </a>
+
+            <a href="tel:+966XXXXXXXXX" class="link-btn btn-phone">
+                <i class="fas fa-phone"></i> اتصل بنا
+            </a>
+
+            <a href="https://instagram.com/{{ company_instagram }}" target="_blank" class="link-btn btn-instagram">
+                <i class="fab fa-instagram"></i> تابعنا على انستجرام
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Request Modal -->
+    <div class="modal-overlay" id="requestModal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeRequestModal()"><i class="fas fa-times"></i></button>
+
+            <div id="modal-form-content">
+                <h3 class="modal-title">تسجيل طلب سريع</h3>
+                <form id="fastRequestForm" onsubmit="submitFastRequest(event)">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" id="rq_name" class="form-control" placeholder="الاسم الكريم" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="rq_phone" class="form-control" placeholder="رقم الجوال" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="rq_notes" class="form-control" rows="4" placeholder="اكتب طلبك او استفسارك هنا..."
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn" id="rq_submit_btn">
+                        <span>إرسال الطلب</span> <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div id="modal-success-content" class="success-msg"
+                style="display: none; text-align: center; padding: 20px 0;">
+                <div
+                    style="width: 100px; height: 100px; background: var(--gold); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; margin: 0 auto 30px; box-shadow: 0 10px 25px rgba(197, 160, 89, 0.3); animation: zoomInSuccess 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h3
+                    style="color: var(--primary-dark); margin-bottom: 15px; font-size: 1.8rem; font-weight: 800; font-family: 'Cairo', sans-serif;">
+                    تم استلام طلبك بنجاح</h3>
+                <p style="color: #64748b; font-size: 1.15rem; line-height: 1.6; margin-bottom: 35px;">يسعدنا اهتمامكم بـ {{ company_name }}، وسيقوم فريقنا بمراجعة استفساركم والرد عليكم في أقرب وقت.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <a href="https://wa.me/{{ company_whatsapp }}" target="_blank" class="submit-btn"
+                        style="background: #25d366; color: white; border-radius: 15px; border: none; font-size: 1.2rem; height: 60px; box-shadow: 0 10px 20px -5px rgba(37, 211, 102, 0.4); text-decoration: none; font-weight: 700;">
+                        <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> متابعة عبر واتساب
+                    </a>
+                    <button onclick="closeRequestModal()"
+                        style="background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; padding: 18px; border-radius: 15px; cursor: pointer; font-weight: 700; font-size: 1.1rem; transition: 0.3s; width: 100%;">
+                        العودة للبطاقة الرئيسية
+                    </button>
+                </div>
+            </div>
+
+            <style>
+                @keyframes zoomInSuccess {
+                    from { transform: scale(0); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+            </style>
+
+            <div id="modal-error-content" class="success-msg"
+                style="display: none; text-align: center; padding: 10px 0;">
+                <div
+                    style="width: 100px; height: 100px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; margin: 0 auto 25px; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);">
+                    <i class="fas fa-times"></i>
+                </div>
+                <h3
+                    style="color: #0f172a; margin-bottom: 15px; font-size: 1.6rem; font-weight: 800; font-family: 'Cairo', sans-serif;">
+                    عذراً، حدث خطأ!</h3>
+                <p style="color: #64748b; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px;">لم نتمكن من إرسال
+                    طلبك حالياً، يرجى المحاولة لاحقاً أو التواصل معنا مباشرة.</p>
+                <button onclick="resetRequestModal()"
+                    style="background: transparent; border: 2px solid #e2e8f0; color: #64748b; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 1.1rem; transition: 0.3s; width: 100%;">
+                    المحاولة مرة أخرى
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        // Modal Logic
+        const modal = document.getElementById('requestModal');
+        const formContent = document.getElementById('modal-form-content');
+        const successContent = document.getElementById('modal-success-content');
+
+        function openRequestModal(e) {
+            e.preventDefault();
+            modal.classList.add('active');
+            formContent.style.display = 'block';
+            successContent.style.display = 'none';
+            document.getElementById('modal-error-content').style.display = 'none';
+            document.getElementById('fastRequestForm').reset();
+        }
+
+        function resetRequestModal() {
+            formContent.style.display = 'block';
+            successContent.style.display = 'none';
+            document.getElementById('modal-error-content').style.display = 'none';
+        }
+
+        function closeRequestModal() {
+            modal.classList.remove('active');
+        }
+
+        // Close on clicking outside the box
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeRequestModal();
+            }
+        });
+
+        // Fast Request API Submit
+        async function submitFastRequest(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('rq_submit_btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+            btn.disabled = true;
+
+            const name = document.getElementById('rq_name').value;
+            const phone = document.getElementById('rq_phone').value;
+            const notes = document.getElementById('rq_notes').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                const response = await fetch('/api/fast-request/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: name, phone: phone, request_text: notes })
+                });
+
+                if (response.ok) {
+                    formContent.style.display = 'none';
+                    successContent.style.display = 'block';
+                } else {
+                    formContent.style.display = 'none';
+                    document.getElementById('modal-error-content').style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                formContent.style.display = 'none';
+                document.getElementById('modal-error-content').style.display = 'block';
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Native Web Share API
+        function sharePage() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ company_name_full }}',
+                    text: 'تصفح عروضنا العقارية أو ارفع طلبك بكل سهولة عبر منصتنا:',
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                // Fallback for desktop/unsupported browsers: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert("تم نسخ رابط الصفحة بنجاح!");
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

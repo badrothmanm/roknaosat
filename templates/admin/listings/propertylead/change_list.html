@@ -1,0 +1,554 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    :root {
+        --frosted-bg: rgba(255, 255, 255, 0.08);
+        --frosted-border: rgba(255, 255, 255, 0.12);
+        --frosted-blur: blur(20px);
+        --gold-premium: #D4AF37;
+    }
+
+    .dashboard-mini-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 0 5px;
+    }
+    .breadcrumbs-minimal { color: #8F9BB3; font-size: 0.85rem; }
+    .breadcrumbs-minimal a { color: var(--gold-premium); text-decoration: none; }
+    
+    .live-stats-compact {
+        display: flex;
+        gap: 12px;
+        font-size: 0.8rem;
+    }
+    .stat-pill {
+        color: #8F9BB3;
+        background: rgba(255,255,255,0.03);
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-pill strong { color: white; }
+
+    .unified-command-bar {
+        background: var(--frosted-bg);
+        backdrop-filter: var(--frosted-blur);
+        -webkit-backdrop-filter: var(--frosted-blur);
+        border: 1px solid var(--frosted-border);
+        border-radius: 16px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: sticky;
+        top: 10px;
+        z-index: 1018;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        min-height: 60px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .command-search-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .smart-search-minimal {
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        max-width: 400px;
+    }
+    .smart-search-minimal input {
+        background: none;
+        border: none;
+        color: white;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+    }
+    .smart-search-minimal i { color: var(--gold-premium); }
+
+    .selection-counter-badge {
+        background: var(--gold-premium);
+        color: #07101C;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    .command-dropdown { position: relative; }
+    .command-trigger {
+        background: none;
+        border: 1px solid var(--frosted-border);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .command-trigger:hover { border-color: var(--gold-premium); color: var(--gold-premium); }
+
+    .frosted-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #0D1623;
+        border: 1px solid var(--frosted-border);
+        border-radius: 14px;
+        min-width: 260px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        z-index: 1028;
+        overflow: hidden;
+    }
+    .frosted-dropdown-menu.active { display: block; }
+
+    .frosted-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        color: #D1D9E6;
+        text-decoration: none;
+        transition: 0.2s;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    .frosted-item:hover { background: rgba(212, 175, 55, 0.1); color: var(--gold-premium); }
+
+    .marketer-initial {
+        width: 24px;
+        height: 24px;
+        background: var(--gold-premium);
+        color: #07101C;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .add-action-pill {
+        background: #22C55E;
+        color: white !important;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        text-decoration: none;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.85rem;
+    }
+
+    .lead-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px 5px;
+    }
+    .lead-luxury-card {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 18px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .lead-luxury-card:hover { transform: translateY(-3px); border-color: var(--gold-premium); }
+    .lead-luxury-card.is_new { border-right: 4px solid var(--gold-premium); }
+    .lead-luxury-card.selected { border-color: var(--gold-premium); background: rgba(212, 175, 55, 0.03); }
+
+    #changelist-filter h2 { display: none; }
+    #changelist-filter h3 { color: var(--gold-premium); font-size: 0.75rem; margin: 15px 18px 8px; }
+    #changelist-filter ul { list-style: none; padding: 0; margin: 0 10px; }
+    #changelist-filter li a { display: block; padding: 6px 15px; color: #8F9BB3; font-size: 0.85rem; border-radius: 6px; }
+    #changelist-filter li.selected a { background: rgba(212, 175, 55, 0.1); color: var(--gold-premium); font-weight: 700; }
+
+    /* قمع المبيعات — عملاء محتملون (PropertyLead) */
+    .lead-pipeline-wrap {
+        background: var(--frosted-bg);
+        backdrop-filter: var(--frosted-blur);
+        -webkit-backdrop-filter: var(--frosted-blur);
+        border: 1px solid var(--frosted-border);
+        border-radius: 16px;
+        padding: 16px 18px 22px;
+        margin-bottom: 18px;
+    }
+    .lead-pipeline-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .lead-pipeline-head h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #fff;
+    }
+    .lead-pipeline-head .hint {
+        font-size: 0.75rem;
+        color: #8F9BB3;
+        max-width: 420px;
+        text-align: right;
+    }
+    .lead-pipeline-board {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        direction: rtl;
+    }
+    .lead-pipeline-col {
+        min-width: 260px;
+        flex: 1;
+        background: rgba(255,255,255,0.03);
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lead-pipeline-col-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+        color: var(--gold-premium);
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+    .lead-pipeline-col-header span.en { font-size: 0.75rem; opacity: 0.75; font-weight: 600; }
+    .lead-pipeline-card {
+        background: #0F172A;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        text-align: right;
+    }
+    .lead-pipeline-card:hover {
+        border-color: var(--gold-premium);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .lead-pipeline-card .row1 {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    .lead-pipeline-card .name { color: #fff; font-weight: 700; font-size: 0.9rem; }
+    .lead-pipeline-card .subtag {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: rgba(100, 116, 139, 0.25);
+        color: #94a3b8;
+        white-space: nowrap;
+    }
+    .lead-pipeline-card .prop {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.75);
+        margin-bottom: 8px;
+        line-height: 1.35;
+    }
+    .lead-pipeline-card .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.45);
+    }
+    .lead-pipeline-card .price { color: var(--gold-premium); font-weight: 700; }
+    .lead-pipeline-empty {
+        text-align: center;
+        padding: 18px 8px;
+        color: #8F9BB3;
+        font-size: 0.8rem;
+        opacity: 0.65;
+    }
+    .pipeline-refresh-btn {
+        background: rgba(212, 175, 55, 0.15);
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        color: var(--gold-premium);
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .pipeline-refresh-btn:hover { background: rgba(212, 175, 55, 0.25); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form id="changelist-form" method="post" novalidate>{% csrf_token %}
+        <div style="display:none">
+            <select name="action">
+                <option value="" selected>---------</option>
+                <option value="ai_reply_to_lead">رد ذكي AI</option>
+                <option value="assign_to_me">إسناد لي</option>
+                <option value="assign_to_marketer">إسناد لمسوق</option>
+                <option value="mark_as_interested">مهتم</option>
+                <option value="mark_as_not_interested">غير مهتم</option>
+                <option value="mark_as_neutral">محايد</option>
+                <option value="mark_as_special">طلب خاص</option>
+                <option value="delete_selected">حذف</option>
+            </select>
+            <input type="hidden" name="marketer_id" id="marketer_id_input">
+            <input type="hidden" name="select_across" value="0" class="select-across">
+            <input type="hidden" name="index" value="0">
+        </div>
+
+    <div class="dashboard-mini-nav">
+        <div class="breadcrumbs-minimal">
+            <a href="{% if request.user.is_staff and not request.user.is_superuser %}{% url 'listings:marketer-dashboard' %}{% else %}/admin/{% endif %}">إحصائياتي</a> / <span>العملاء المحتملون</span>
+        </div>
+        
+        <div class="live-stats-compact">
+            <div class="stat-pill">الكل: <strong>{{ header_stats.total }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(34, 197, 94, 0.2);">مهتم: <strong style="color: #22C55E;">{{ header_stats.interested }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(239, 68, 68, 0.2);">غير مهتم: <strong style="color: #EF4444;">{{ header_stats.not_interested }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(139, 92, 246, 0.2);">طلب خاص: <strong style="color: #8B5CF6;">{{ header_stats.special }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(100, 116, 139, 0.2);">محايد: <strong style="color: #64748B;">{{ header_stats.neutral }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05);">جديد اليوم: <strong style="color: #D4AF37;">{{ header_stats.new_today }}</strong></div>
+        </div>
+    </div>
+
+    {# قمع المبيعات الذكي — بيانات من PropertyLead بنفس صلاحيات القائمة #}
+    {% if pipeline_columns %}
+    <div class="lead-pipeline-wrap">
+        <div class="lead-pipeline-head">
+            <h3><i class="fas fa-stream" style="color: var(--gold-premium);"></i> قمع المبيعات الذكي (Sales Pipeline)</h3>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span class="hint">الأعمدة تعتمد على <strong>حالة العميل المحتمل</strong> في النظام. إجمالي ضمن صلاحيتك: <strong>{{ pipeline_total }}</strong></span>
+                <button type="button" class="pipeline-refresh-btn" onclick="location.reload()" title="إعادة تحميل الصفحة">تحديث الآن</button>
+            </div>
+        </div>
+        <div class="lead-pipeline-board">
+            {% for col in pipeline_columns %}
+            <div class="lead-pipeline-col" data-stage="{{ col.key }}">
+                <div class="lead-pipeline-col-header">
+                    <span>{{ col.label_ar }} <span class="en">({{ col.label_en }})</span></span>
+                    <span style="font-size:0.75rem; color:#8F9BB3;">{{ col.count }}</span>
+                </div>
+                {% for card in col.items %}
+                <div class="lead-pipeline-card" role="link" tabindex="0"
+                     onclick="window.location.href='{{ card.edit_url }}'"
+                     onkeydown="if(event.key==='Enter')window.location.href='{{ card.edit_url }}'">
+                    <div class="row1">
+                        <span class="name">{{ card.name }}</span>
+                        <span style="font-size:0.7rem; color:#64748B;">#{{ card.id }}</span>
+                    </div>
+                    {% if card.sub_status %}
+                    <div style="margin-bottom:6px;"><span class="subtag">{{ card.sub_status }}</span></div>
+                    {% endif %}
+                    <div class="prop"><i class="fas fa-home" style="color: var(--gold-premium); font-size:0.75rem;"></i> {{ card.property_line }}</div>
+                    <div class="foot">
+                        <span>{{ card.date|date:"j E" }}</span>
+                        <span>{% if card.price %}<span class="price">{{ card.price }}</span>{% else %}—{% endif %}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="lead-pipeline-empty">لا عملاء في هذه المرحلة</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="unified-command-bar">
+        <div class="command-search-section">
+            <div class="smart-search-minimal">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="ابحث بالاسم أو رقم الجوال..." value="{{ cl.query }}" 
+                       onkeydown="if(event.key==='Enter'){ window.location.search = '?q=' + encodeURIComponent(this.value); return false; }">
+            </div>
+            
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-filter"></i> <span>تصفية</span>
+                </button>
+                <div class="frosted-dropdown-menu" style="min-width: 200px;" onclick="event.stopPropagation()">
+                    <div id="changelist-filter">
+                        {% for spec in cl.filter_specs %}
+                            {% admin_list_filter cl spec %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div id="selection-bar" style="display: none; align-items: center; gap: 10px;">
+                <div class="selection-counter-badge"><span id="select-count">0</span></div>
+                <input type="checkbox" id="action-toggle" style="width: 16px; height: 16px; accent-color: var(--gold-premium);">
+            </div>
+
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-bolt"></i> <span>الإجراءات</span>
+                </button>
+                <div class="frosted-dropdown-menu" onclick="event.stopPropagation()">
+                    <div class="frosted-item" onclick="applyAction('ai_reply_to_lead')"><i class="fas fa-magic" style="color: #8B5CF6;"></i> رد ذكي بالذكاء الاصطناعي</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_interested')"><i class="fas fa-check-circle" style="color: #22C55E;"></i> تحديد كـ "مهتم"</div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_special')"><i class="fas fa-star" style="color: #D4AF37;"></i> تحديد كـ "طلب خاص"</div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_neutral')"><i class="fas fa-info-circle" style="color: #64748B;"></i> تحديد كـ "محايد"</div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_not_interested')"><i class="fas fa-times-circle" style="color: #EF4444;"></i> تحديد كـ "غير مهتم"</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05);"></div>
+                    <div class="frosted-item" onclick="applyAction('delete_selected')" style="color: #EF4444;"><i class="fas fa-trash"></i> حذف البيانات</div>
+                </div>
+            </div>
+
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-user-plus"></i> <span id="assign-label">إسناد</span>
+                </button>
+                <div class="frosted-dropdown-menu" onclick="event.stopPropagation()">
+                    <div class="frosted-item" onclick="applyAction('assign_to_me')">
+                        <i class="fas fa-user-check"></i> إسناد لي (أنا)
+                    </div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                    <div style="padding: 10px 18px; color: var(--gold-premium); font-size: 0.75rem; font-weight: 700;">المسوقين</div>
+                    {% for m in marketers %}
+                    <div class="frosted-item" onclick="applyAssign('{{ m.id }}', '{{ m.name }}')">
+                        <div class="marketer-initial">{{ m.initial }}</div>
+                        {{ m.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="command-right-tools">
+            <a href="{% url 'admin:listings_propertylead_add' %}" class="add-action-pill">
+                <i class="fas fa-plus"></i> أضف عميل
+            </a>
+        </div>
+    </div>
+
+    <div class="lead-card-grid">
+        {% for res in results %}
+        <div class="lead-card-box" style="position: relative;">
+            <input type="checkbox" name="_selected_action" value="{{ res.id }}" class="action-select" style="position: absolute; top: 15px; right: 15px; z-index: 10; width: 18px; height: 18px; accent-color: var(--gold-premium);">
+            
+            <a href="{{ res.edit_url }}" class="lead-luxury-card {% if res.is_new %}is_new{% endif %}" style="display: block; text-decoration: none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-right: 25px;">
+                    <span style="color: white; font-weight: 700;">{{ res.name }}</span>
+                    {{ res.status_html|safe }}
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-phone-alt" style="color: var(--gold-premium); font-size: 0.8rem;"></i>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ res.phone }}</span>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.02);">
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 4px;">الاهتمام بالعقار:</div>
+                    <div style="color: #D4AF37; font-weight: 600; font-size: 0.85rem;">{{ res.property|default:"—" }}</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: rgba(255,255,255,0.3); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                    <span>المصدر: {{ res.source|default:"مباشر" }}</span>
+                    <span>المسوق: {{ res.assigned_to }}</span>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #8F9BB3; opacity: 0.5;">لا يوجد عملاء حالياً</div>
+        {% endfor %}
+    </div>
+
+    {% block pagination %}{% pagination cl %}{% endblock %}
+    </form>
+</div>
+
+<script>
+    function jh_toggleDropdown(el, ev) {
+        if (ev) ev.stopPropagation();
+        const parent = el.closest('.command-dropdown');
+        const menu = parent.querySelector('.frosted-dropdown-menu');
+        const wasActive = menu.classList.contains('active');
+        document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        if (!wasActive) menu.classList.add('active');
+    }
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+    });
+
+    function applyAction(act) {
+        const checked = document.querySelectorAll('.action-select:checked');
+        if (checked.length === 0) { alert('اختر عميل واحد على الأقل'); return; }
+        const form = document.getElementById('changelist-form');
+        form.querySelector('select[name="action"]').value = act;
+        form.submit();
+    }
+
+    function applyAssign(mid, mname) {
+        document.getElementById('marketer_id_input').value = mid;
+        applyAction('assign_to_marketer');
+    }
+
+    function updateSelectionUI() {
+        const checked = document.querySelectorAll('.action-select:checked');
+        const bar = document.getElementById('selection-bar');
+        const count = document.getElementById('select-count');
+        if (checked.length > 0) {
+            bar.style.display = 'flex';
+            count.textContent = checked.length;
+        } else {
+            bar.style.display = 'none';
+        }
+    }
+
+    document.getElementById('action-toggle').addEventListener('change', function() {
+        document.querySelectorAll('.action-select').forEach(cb => {
+            cb.checked = this.checked;
+            cb.closest('.lead-card-box').querySelector('.lead-luxury-card').classList.toggle('selected', this.checked);
+        });
+        updateSelectionUI();
+    });
+
+    document.querySelectorAll('.action-select').forEach(cb => {
+        cb.addEventListener('change', function() {
+            this.closest('.lead-card-box').querySelector('.lead-luxury-card').classList.toggle('selected', this.checked);
+            updateSelectionUI();
+        });
+    });
+
+    // تحديث تلقائي للقمع كل 4 دقائق إذا لم يكن المستخدم يكتب في حقل إدخال
+    setInterval(function() {
+        var el = document.activeElement;
+        if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) return;
+        location.reload();
+    }, 240000);
+</script>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}{{ title }} | {{ jazzmin_settings.site_title }}{% endblock %}</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+    <!-- Bootstrap and adminLTE -->
+    <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}">
+
+    <!-- Bootswatch theme -->
+    {% if jazzmin_ui.theme.name != 'default' %}
+        <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+    {% endif %}
+
+    <!-- Custom fixes -->
+    <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+    {% if jazzmin_settings.custom_css %}
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+    {% endif %}
+
+    <!-- Google Fonts - Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    {% block extrastyle %}{% endblock %}
+    {% block extrahead %}{% endblock %}
+
+    <style>
+        :root {
+            --nav: #07101c;
+            --gold: #1B4F9C;
+            --gold-soft: rgba(197,160,89,0.15);
+        }
+
+        /* Page background */
+        body.login-page {
+            background: radial-gradient(ellipse at 60% 20%, #0d2050 0%, #07101c 55%, #050d18 100%) !important;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        /* Login box */
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 1rem;
+        }
+
+        /* ── LOGO AREA ── */
+        .login-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .brand-icon-wrap {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(197,160,89,0.05));
+            border: 1.5px solid rgba(197,160,89,0.35);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(197,160,89,0.12), inset 0 1px 0 rgba(197,160,89,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .brand-icon-wrap:hover {
+            box-shadow: 0 0 40px rgba(197,160,89,0.25);
+            border-color: rgba(197,160,89,0.6);
+        }
+
+        .brand-icon-wrap i {
+            font-size: 1.6rem;
+            color: var(--gold);
+        }
+
+        .brand-name {
+            font-family: 'Amiri', serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 0.5px;
+        }
+
+        .brand-subtitle {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: -0.3rem;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: rgba(10, 22, 55, 0.85) !important;
+            border: 1px solid rgba(197,160,89,0.15) !important;
+            border-radius: 16px !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(197,160,89,0.08) !important;
+        }
+
+        .login-card-body {
+            padding: 2rem 1.75rem !important;
+        }
+
+        /* Welcome text */
+        .login-box-msg {
+            color: rgba(255,255,255,0.5) !important;
+            font-size: 0.85rem;
+            font-weight: 400;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* Input groups */
+        .input-group {
+            direction: rtl;
+        }
+
+        .input-group .form-control {
+            background: rgba(255,255,255,0.04) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-left: none !important;
+            border-right-color: rgba(197,160,89,0.2) !important;
+            color: rgba(255,255,255,0.9) !important;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.9rem;
+            height: 48px;
+            border-radius: 0 8px 8px 0 !important;
+            transition: all 0.25s ease;
+        }
+
+        .input-group .form-control:focus {
+            border-color: rgba(197,160,89,0.4) !important;
+            background: rgba(197,160,89,0.04) !important;
+            box-shadow: none !important;
+            outline: none;
+        }
+
+        .input-group .form-control::placeholder {
+            color: rgba(255,255,255,0.25);
+            font-size: 0.85rem;
+        }
+
+        .input-group-text {
+            background: rgba(197,160,89,0.08) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-right: none !important;
+            border-left-color: rgba(197,160,89,0.2) !important;
+            color: var(--gold) !important;
+            width: 44px;
+            justify-content: center;
+            border-radius: 8px 0 0 8px !important;
+        }
+
+        /* Submit button */
+        .btn-primary,
+        .btn.btn-primary {
+            background: linear-gradient(135deg, #1B4F9C, #163F7D) !important;
+            border: none !important;
+            color: #07101c !important;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            height: 48px;
+            border-radius: 10px !important;
+            letter-spacing: 0.03em;
+            box-shadow: 0 8px 24px rgba(197,160,89,0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-primary:hover,
+        .btn.btn-primary:hover {
+            background: linear-gradient(135deg, #2B6BC4, #1B4F9C) !important;
+            box-shadow: 0 12px 30px rgba(197,160,89,0.45) !important;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0) !important;
+        }
+
+        /* Error callout */
+        .callout-danger {
+            background: rgba(220, 38, 38, 0.1) !important;
+            border-color: rgba(220, 38, 38, 0.3) !important;
+            border-radius: 8px;
+        }
+
+        /* Link */
+        a {
+            color: rgba(197,160,89,0.7) !important;
+            transition: color 0.2s;
+        }
+        a:hover { color: var(--gold) !important; }
+    </style>
+</head>
+
+<body class="login-page">
+<div class="login-box">
+
+    <!-- Logo — matches site header exactly -->
+    <div class="login-logo">
+        <a href="{% url 'admin:index' %}" class="brand-mark">
+            <div class="brand-icon-wrap">
+                <i class="fas fa-building"></i>
+            </div>
+            <div>
+                <div class="brand-name">{{ jazzmin_settings.site_brand }}</div>
+                <div class="brand-subtitle">لوحة تحكم الإدارة</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body login-card-body">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+<!-- Bootstrap 5 -->
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
+
+{% if jazzmin_settings.custom_js %}
+    <script src="{% static jazzmin_settings.custom_js %}"></script>
+{% endif %}
+
+</body>
+</html>

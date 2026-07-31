@@ -1,0 +1,1231 @@
+/* =========================================================
+   الركن الأوسط — طبقة الهوية الهادئة (فرونت فقط)
+   ========================================================= */
+
+.main-header {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-bottom: 1px solid var(--brand-line) !important;
+    box-shadow: 0 1px 0 rgba(10, 10, 10, 0.03) !important;
+}
+
+.main-header.is-scrolled {
+    box-shadow: 0 10px 30px rgba(10, 10, 10, 0.06) !important;
+}
+
+.site-logo {
+    color: var(--brand-ink) !important;
+    font-family: "Tajawal", "IBM Plex Sans Arabic", sans-serif !important;
+    font-weight: 800;
+    gap: 0;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none !important;
+    flex-shrink: 0;
+    line-height: 0;
+}
+
+.site-logo .logo-full {
+    display: block;
+    height: 52px;
+    width: auto;
+    max-width: min(46vw, 168px);
+    object-fit: contain;
+    object-position: right center;
+}
+
+@media (min-width: 768px) {
+    .site-logo .logo-full {
+        height: 58px;
+        max-width: 190px;
+    }
+}
+
+.site-logo .logo-mark {
+    width: 40px;
+    height: 40px;
+    display: block;
+    border-radius: 9px;
+}
+
+.site-logo .logo-text {
+    font-size: 1.05rem;
+    letter-spacing: 0;
+    line-height: 1.2;
+}
+
+.site-logo .logo-sub {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.drawer-logo-img {
+    display: block;
+    height: 64px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 0.35rem 0.55rem;
+}
+
+.logo-icon { color: var(--brand-blue) !important; }
+
+/* —— مقدمة: أقسام بحث مربوطة بالعروض والباكند —— */
+.hero.hero--calm {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    padding: clamp(3.5rem, 7vw, 5.5rem) 0 clamp(2.5rem, 5vw, 3.5rem);
+    background: #F3F6FA !important;
+    text-align: right;
+}
+
+.hero-calm-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 55% 50% at 12% 20%, rgba(27, 79, 156, 0.10), transparent 70%),
+        radial-gradient(ellipse 45% 40% at 88% 70%, rgba(27, 79, 156, 0.07), transparent 65%),
+        linear-gradient(180deg, #F7F9FC 0%, #EEF3F9 100%);
+}
+
+.hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.55;
+    animation: orbFloat 12s ease-in-out infinite;
+}
+
+.hero-orb--a {
+    width: 18rem;
+    height: 18rem;
+    background: rgba(27, 79, 156, 0.18);
+    top: -4rem;
+    left: -3rem;
+}
+
+.hero-orb--b {
+    width: 14rem;
+    height: 14rem;
+    background: rgba(10, 10, 10, 0.06);
+    bottom: -2rem;
+    right: 8%;
+    animation-delay: -4s;
+}
+
+.hero-grid-soft {
+    position: absolute;
+    inset: 0;
+    opacity: 0.35;
+    background-image:
+        linear-gradient(rgba(27, 79, 156, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(27, 79, 156, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 75%);
+}
+
+.hero--calm .hero-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+}
+
+.hero-browse {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.hero-browse-head {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.hero--browse .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: rgba(27, 79, 156, 0.08) !important;
+    border: 1px solid rgba(27, 79, 156, 0.16) !important;
+    color: #1B4F9C !important;
+    border-radius: 999px !important;
+    padding: 0.45rem 1rem;
+    margin-bottom: 1.1rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.hero--browse .pulse-dot { background: #1B4F9C; }
+
+.hero--browse .hero-brand {
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    font-weight: 800;
+    color: #0A0A0A;
+    line-height: 1.12;
+    margin: 0 0 0.75rem;
+    animation: brandIn 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero--browse .hero-brand span {
+    display: block;
+    color: #1B4F9C;
+    font-size: 0.4em;
+    font-weight: 600;
+    margin-top: 0.35rem;
+}
+
+.hero--browse .hero-heading {
+    font-size: clamp(1.1rem, 2.4vw, 1.35rem) !important;
+    font-weight: 500 !important;
+    color: #3A4050 !important;
+    margin: 0 0 0.55rem !important;
+    animation: brandIn 0.85s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero--browse .hero-description {
+    color: #6B7285 !important;
+    font-size: 1rem !important;
+    line-height: 1.7 !important;
+    max-width: 28rem;
+    margin: 0 auto !important;
+    animation: brandIn 0.85s 0.14s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.property-type-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 auto 1.5rem;
+}
+
+@media (min-width: 560px) {
+    .property-type-nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+}
+
+@media (min-width: 900px) {
+    .property-type-nav {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.7rem;
+    }
+}
+
+.ptype-btn {
+    appearance: none;
+    border: 1px solid #D9E1EC;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 16px;
+    padding: 1.05rem 0.65rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 6.1rem;
+    color: #1A1F2C;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.25s ease,
+        box-shadow 0.35s ease,
+        background 0.25s ease;
+}
+
+.ptype-btn:hover {
+    transform: translateY(-3px);
+    border-color: rgba(27, 79, 156, 0.35);
+    box-shadow: 0 14px 28px rgba(27, 79, 156, 0.12);
+    background: #fff;
+}
+
+.ptype-btn:active {
+    transform: scale(0.96);
+}
+
+.ptype-btn.is-active {
+    border-color: #1B4F9C;
+    background: linear-gradient(180deg, #fff 0%, #F0F5FC 100%);
+    box-shadow: 0 12px 26px rgba(27, 79, 156, 0.16);
+}
+
+.ptype-btn.is-active .ptype-icon {
+    background: #1B4F9C;
+    color: #fff;
+}
+
+.ptype-icon {
+    width: 2.55rem;
+    height: 2.55rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(27, 79, 156, 0.1);
+    color: #1B4F9C;
+    font-size: 1.05rem;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ptype-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+/* —— أنيميشن احترافي للأقسام (كل الأجهزة) —— */
+.property-type-nav {
+    perspective: 900px;
+}
+
+.ptype-btn {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.92);
+    will-change: transform, opacity;
+}
+
+.property-type-nav.is-inview .ptype-btn {
+    animation: ptypeRise 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.property-type-nav.is-inview .ptype-btn:nth-child(1) { animation-delay: 0.04s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(2) { animation-delay: 0.10s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(3) { animation-delay: 0.16s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(4) { animation-delay: 0.22s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(5) { animation-delay: 0.28s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(6) { animation-delay: 0.34s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(7) { animation-delay: 0.40s; }
+
+.property-type-nav.is-inview .ptype-btn .ptype-icon {
+    animation: ptypeIconPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.property-type-nav.is-inview .ptype-btn:nth-child(1) .ptype-icon { animation-delay: 0.18s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(2) .ptype-icon { animation-delay: 0.24s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(3) .ptype-icon { animation-delay: 0.30s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(4) .ptype-icon { animation-delay: 0.36s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(5) .ptype-icon { animation-delay: 0.42s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(6) .ptype-icon { animation-delay: 0.48s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(7) .ptype-icon { animation-delay: 0.54s; }
+
+.ptype-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        115deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.55) 48%,
+        transparent 62%
+    );
+    transform: translateX(-130%);
+    pointer-events: none;
+    opacity: 0;
+}
+
+.property-type-nav.is-inview .ptype-btn::after {
+    animation: ptypeSheen 2.8s ease-in-out infinite;
+}
+
+.property-type-nav.is-inview .ptype-btn:nth-child(1)::after { animation-delay: 0s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(2)::after { animation-delay: 0.25s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(3)::after { animation-delay: 0.5s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(4)::after { animation-delay: 0.75s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(5)::after { animation-delay: 1s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(6)::after { animation-delay: 1.25s; }
+.property-type-nav.is-inview .ptype-btn:nth-child(7)::after { animation-delay: 1.5s; }
+
+.ptype-btn.is-active {
+    animation: ptypeSelect 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (max-width: 1023px) {
+    .ptype-btn:hover {
+        transform: none;
+        box-shadow: 0 10px 22px rgba(27, 79, 156, 0.10);
+    }
+
+    .ptype-btn:active {
+        transform: scale(0.95);
+        box-shadow: 0 6px 14px rgba(27, 79, 156, 0.14);
+    }
+}
+
+@keyframes ptypeRise {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 28px, 0) scale(0.92);
+        filter: blur(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes ptypeIconPop {
+    from { transform: scale(0.6) rotate(-8deg); opacity: 0.4; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes ptypeSheen {
+    0% { opacity: 0; transform: translateX(-130%); }
+    15% { opacity: 0.65; }
+    45% { opacity: 0; transform: translateX(130%); }
+    100% { opacity: 0; transform: translateX(130%); }
+}
+
+@keyframes ptypeSelect {
+    0% { transform: scale(1); }
+    45% { transform: scale(0.96); }
+    100% { transform: scale(1); }
+}
+
+@keyframes brandIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(12px, -18px); }
+}
+
+.offers-section {
+    background: var(--brand-surface) !important;
+}
+
+.section-title {
+    color: var(--brand-ink) !important;
+    font-weight: 800;
+}
+
+.title-line {
+    background: linear-gradient(90deg, var(--brand-blue), transparent) !important;
+    height: 3px !important;
+    border-radius: 3px;
+}
+
+.filter-bar {
+    background: #fff !important;
+    border: 1px solid var(--brand-line);
+    box-shadow: var(--shadow-soft) !important;
+    border-radius: 18px !important;
+}
+
+.btn-search {
+    background: var(--brand-blue) !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+}
+
+.property-card {
+    position: relative !important;
+    isolation: isolate;
+    border: 1px solid transparent !important;
+    border-radius: 22px !important;
+    background:
+        linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(27, 79, 156, 0.35) 28%,
+            rgba(157, 183, 224, 0.55) 52%,
+            rgba(27, 79, 156, 0.22) 78%,
+            rgba(255, 255, 255, 0.7) 100%
+        ) border-box !important;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.85) inset,
+        0 10px 28px rgba(15, 23, 42, 0.07),
+        0 2px 8px rgba(27, 79, 156, 0.06) !important;
+    overflow: hidden !important;
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease !important;
+}
+
+.property-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+        120deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.55) 48%,
+        transparent 62%
+    );
+    background-size: 220% 100%;
+    background-position: 120% 0;
+    opacity: 0.35;
+    transition: background-position 0.7s ease, opacity 0.35s ease;
+}
+
+.property-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.95) inset,
+        0 18px 40px rgba(15, 23, 42, 0.12),
+        0 8px 24px rgba(27, 79, 156, 0.14) !important;
+    background:
+        linear-gradient(#fff, #fff) padding-box,
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 1) 0%,
+            rgba(27, 79, 156, 0.55) 30%,
+            rgba(157, 183, 224, 0.85) 55%,
+            rgba(27, 79, 156, 0.4) 80%,
+            rgba(255, 255, 255, 0.85) 100%
+        ) border-box !important;
+}
+
+.property-card:hover::before {
+    opacity: 0.65;
+    background-position: -40% 0;
+}
+
+.property-card .property-thumb {
+    border-radius: 20px 20px 0 0;
+}
+
+.property-card .property-thumb::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 10, 10, 0.12) 0%,
+        transparent 28%,
+        transparent 70%,
+        rgba(10, 10, 10, 0.06) 100%
+    );
+    z-index: 1;
+}
+
+.property-card .property-content {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+}
+
+.property-card .property-title {
+    color: #1B4F9C !important;
+}
+
+.property-card .btn-whatsapp-card {
+    background: #1B4F9C !important;
+    border-radius: 999px !important;
+    box-shadow: 0 8px 18px rgba(27, 79, 156, 0.22);
+}
+
+.property-card .btn-whatsapp-card:hover {
+    background: #163f7c !important;
+    box-shadow: 0 10px 22px rgba(27, 79, 156, 0.28);
+}
+
+.offer-badge,
+.status-badge-pos .badge {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 12px rgba(10, 10, 10, 0.18);
+}
+
+.offer-badge {
+    background: rgba(10, 10, 10, 0.82) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+    border-radius: 10px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .property-card::before {
+        display: none;
+    }
+}
+
+.main-footer {
+    background: #0A0A0A !important;
+    padding-top: 3.5rem;
+}
+
+.license-badge {
+    background: rgba(27, 79, 156, 0.18) !important;
+    border: 1px solid rgba(27, 79, 156, 0.35) !important;
+    color: #D6E4F7 !important;
+}
+
+.modal-icon {
+    background: var(--brand-blue) !important;
+    box-shadow: 0 10px 24px rgba(27, 79, 156, 0.28) !important;
+}
+
+.btn-secondary:hover {
+    border-color: var(--brand-blue);
+    color: var(--brand-blue);
+}
+
+#backToTop {
+    background: var(--brand-ink) !important;
+}
+
+/* —— شريط التنبيه المتحرك أسفل الهيدر —— */
+.site-ticker {
+    --ticker-bg: #1B4F9C;
+    --ticker-fg: #FFFFFF;
+    position: sticky;
+    top: 72px;
+    z-index: 890;
+    display: flex;
+    align-items: stretch;
+    min-height: 40px;
+    background: var(--ticker-bg);
+    color: var(--ticker-fg);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    direction: rtl;
+}
+
+.site-ticker-label {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: rgba(0, 0, 0, 0.22);
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.site-ticker-track {
+    flex: 1 1 auto;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+.site-ticker-move {
+    display: flex;
+    width: max-content;
+    gap: 4rem;
+    animation: tickerScroll 28s linear infinite;
+    padding: 0.55rem 0;
+}
+
+.site-ticker-item {
+    display: inline-block;
+    white-space: nowrap;
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding-inline: 1rem;
+}
+
+.site-ticker:hover .site-ticker-move {
+    animation-play-state: paused;
+}
+
+@keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(50%); }
+}
+
+body.has-site-ticker .main-header {
+    /* يبقى الهيدر فوق الشريط */
+    z-index: 900;
+}
+
+/* تكدس الكروت يراعي ارتفاع الشريط */
+@media (max-width: 767px) {
+    body.has-site-ticker #propertiesList .property-card.stack-card {
+        top: calc(78px + var(--ticker-h, 0px));
+        height: calc(100dvh - 96px - var(--ticker-h, 0px));
+        max-height: calc(100dvh - 96px - var(--ticker-h, 0px));
+    }
+}
+
+/* —— تكدس كروت العروض على الجوال (شاشة كاملة + تداخل أثناء التمرير) —— */
+@media (max-width: 767px) {
+    #offers .container {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+
+    #offers .grid-listing#propertiesList,
+    #propertiesList.grid-listing {
+        display: flex !important;
+        flex-direction: column;
+        gap: 0;
+        padding-bottom: 18vh;
+    }
+
+    #propertiesList .property-card.stack-card {
+        position: sticky;
+        top: 78px;
+        height: calc(100dvh - 96px);
+        max-height: calc(100dvh - 96px);
+        margin: 0 0 1.25rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 22px !important;
+        border: 1px solid var(--brand-line) !important;
+        box-shadow: 0 18px 40px rgba(10, 10, 10, 0.12) !important;
+        background: #fff !important;
+        transform: scale(calc(1 - (var(--stack-progress, 0) * 0.06)))
+            translateY(calc(var(--stack-progress, 0) * -10px));
+        filter: brightness(calc(1 - (var(--stack-progress, 0) * 0.12)));
+        transition: box-shadow 0.25s ease;
+        will-change: transform, filter;
+    }
+
+    #propertiesList .property-card.stack-card:hover {
+        transform: scale(calc(1 - (var(--stack-progress, 0) * 0.06)))
+            translateY(calc(var(--stack-progress, 0) * -10px)) !important;
+        box-shadow: 0 18px 40px rgba(10, 10, 10, 0.12) !important;
+    }
+
+    #propertiesList .property-card.stack-card .property-thumb {
+        flex: 1 1 auto;
+        min-height: 42%;
+        height: auto !important;
+    }
+
+    #propertiesList .property-card.stack-card .property-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    #propertiesList .property-card.stack-card:hover .property-thumb img {
+        transform: none;
+    }
+
+    #propertiesList .property-card.stack-card .property-content {
+        flex: 0 0 auto;
+        padding: 1.15rem 1.15rem 1.25rem;
+        background: #fff;
+    }
+
+    #propertiesList .property-card.stack-card .property-title {
+        color: #1B4F9C !important;
+        font-size: 1.15rem;
+        margin-bottom: 0.75rem;
+    }
+
+    #propertiesList .property-card.stack-card .property-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        align-items: stretch;
+    }
+
+    #propertiesList .property-card.stack-card .meta-item,
+    #propertiesList .property-card.stack-card .price-display,
+    #propertiesList .property-card.stack-card .price-hidden {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    #propertiesList .property-card.stack-card .btn-whatsapp-card {
+        border-radius: 999px !important;
+        padding: 0.85rem 1rem !important;
+        font-weight: 700;
+    }
+
+    #propertiesActions {
+        position: relative;
+        z-index: 50;
+        padding: 0.5rem 0 1.5rem;
+    }
+}
+
+/* ─── البنر الإعلاني (تصميم Gemini متجاوب) ─── */
+.listings-ad-banner {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0.85rem 0 1.35rem;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    z-index: 40;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.listings-ad-banner-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.listings-ad-banner-link:focus-visible {
+    outline: 3px solid #1B4F9C;
+    outline-offset: 3px;
+}
+
+.listings-ad-banner--image .listings-ad-banner-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    background: #f4f6f9;
+}
+
+@media (min-width: 992px) {
+    .listings-ad-banner--image .listings-ad-banner-photo {
+        max-height: 320px;
+        object-fit: cover;
+        object-position: center;
+    }
+}
+
+.listings-ad-banner--brand {
+    background: linear-gradient(135deg, #F4F6F9 0%, #EEF2F8 100%);
+    border: 1px solid rgba(27, 79, 156, 0.1);
+}
+
+.listings-ad-banner--brand::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(42%, 420px);
+    background:
+        linear-gradient(90deg, rgba(27, 79, 156, 0.08) 0%, rgba(244, 246, 249, 0) 100%),
+        repeating-linear-gradient(45deg, #1B4F9C 0, #1B4F9C 2px, transparent 0, transparent 40px);
+    opacity: 0.14;
+    clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+    pointer-events: none;
+}
+
+.rokna-banner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 2.5vw, 2.5rem);
+    padding: clamp(1.25rem, 2.5vw, 2.25rem) clamp(1.15rem, 3vw, 3.5rem);
+    min-height: 220px;
+    font-family: "Tajawal", "Segoe UI", sans-serif;
+}
+
+.rokna-banner-logo-card {
+    flex: 0 0 auto;
+    background: #0A0A0A;
+    padding: clamp(0.9rem, 1.6vw, 1.6rem) clamp(1.1rem, 1.9vw, 1.85rem);
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(10, 10, 10, 0.18);
+    border: 1px solid rgba(27, 79, 156, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rokna-banner-logo {
+    display: block;
+    width: auto;
+    height: clamp(120px, 15vw, 190px);
+    max-width: min(220px, 30vw);
+    object-fit: contain;
+    opacity: 1;
+    filter: none;
+}
+
+.rokna-banner-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: right;
+}
+
+.rokna-banner-title {
+    margin: 0;
+    font-size: clamp(1.7rem, 3.2vw, 2.75rem);
+    font-weight: 800;
+    color: #0A0A0A;
+    line-height: 1.15;
+}
+
+.rokna-banner-subtitle {
+    margin: 0.15rem 0 0.85rem;
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    font-weight: 700;
+    color: #1B4F9C;
+}
+
+.rokna-banner-slogan {
+    margin: 0 0 1.15rem;
+    font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+    font-weight: 400;
+    color: #4A5568;
+    border-right: 4px solid #1B4F9C;
+    padding-right: 0.75rem;
+}
+
+.rokna-banner-services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.rokna-banner-pill {
+    background: #1B4F9C;
+    color: #fff;
+    padding: 0.55rem 1.15rem;
+    border-radius: 999px;
+    font-size: clamp(0.88rem, 1.15vw, 1.05rem);
+    font-weight: 700;
+    line-height: 1.3;
+    box-shadow: 0 4px 12px rgba(27, 79, 156, 0.2);
+    white-space: nowrap;
+}
+
+/* تابلت */
+@media (max-width: 991px) {
+    .listings-ad-banner--brand::before {
+        width: 34%;
+        opacity: 0.1;
+    }
+
+    .rokna-banner {
+        min-height: 0;
+        gap: 1rem;
+    }
+
+    .rokna-banner-logo {
+        height: 120px;
+        max-width: 130px;
+    }
+}
+
+/* جوال — تخطيط عمودي مستوحى من تصميم Gemini */
+@media (max-width: 767px) {
+    .listings-ad-banner {
+        margin: 0.55rem 0 1rem;
+        border-radius: 14px;
+    }
+
+    .listings-ad-banner--brand {
+        background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F9 55%, #EEF2F8 100%);
+    }
+
+    .listings-ad-banner--brand::before {
+        display: none;
+    }
+
+    .rokna-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.25rem 1rem 1.35rem;
+        gap: 1rem;
+    }
+
+    .rokna-banner-logo-card {
+        width: min(100%, 280px);
+        border-radius: 20px;
+        padding: 1.15rem 1.35rem;
+        background: #0A0A0A;
+    }
+
+    .rokna-banner-logo {
+        height: 140px;
+        max-width: 200px;
+    }
+
+    .rokna-banner-content {
+        width: 100%;
+        text-align: center;
+    }
+
+    .rokna-banner-title {
+        font-size: 1.85rem;
+    }
+
+    .rokna-banner-subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .rokna-banner-slogan {
+        border-right: 0;
+        border-bottom: 3px solid #1B4F9C;
+        display: inline-block;
+        padding: 0 0 0.35rem;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+
+    .rokna-banner-services {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+        width: 100%;
+    }
+
+    .rokna-banner-pill {
+        border-radius: 14px;
+        padding: 0.75rem 0.5rem;
+        white-space: normal;
+        font-size: 0.95rem;
+    }
+}
+
+/* ─── قسم موقع العقار / Google Maps ─── */
+.gmaps-section {
+    margin-top: 2rem;
+}
+
+.gmaps-section-title {
+    color: #0f172a;
+    margin: 0 0 1.15rem;
+    border-bottom: 2px solid #1B4F9C;
+    display: inline-block;
+    padding-bottom: 0.35rem;
+    font-weight: 800;
+}
+
+.gmaps-card.map-wrapper,
+.property-map .gmaps-card {
+    height: auto;
+    min-height: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.gmaps-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 1.1rem;
+    background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+    border-bottom: 1px solid #eef2f7;
+}
+
+.gmaps-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.gmaps-brand--lg {
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 0.35rem;
+}
+
+.gmaps-pin {
+    display: block;
+    flex-shrink: 0;
+    filter: drop-shadow(0 4px 8px rgba(234, 67, 53, 0.28));
+}
+
+.gmaps-wordmark {
+    font-family: "Product Sans", "Roboto", "Segoe UI", Tahoma, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #5f6368;
+    letter-spacing: 0.01em;
+    line-height: 1;
+}
+
+.gmaps-wordmark strong {
+    font-weight: 700;
+    color: #1a73e8;
+}
+
+.gmaps-embed {
+    position: relative;
+    width: 100%;
+    min-height: 260px;
+    background: #e8f0fe;
+}
+
+.gmaps-embed iframe,
+.gmaps-card .map-wrapper iframe,
+.property-map .gmaps-embed iframe {
+    display: block;
+    width: 100%;
+    min-height: 280px;
+    border: 0;
+}
+
+.gmaps-link-panel {
+    padding: 2rem 1.25rem 1.75rem;
+    text-align: center;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(66, 133, 244, 0.1), transparent 55%),
+        linear-gradient(180deg, #f8fafc 0%, #eef3fb 100%);
+}
+
+.gmaps-link-text {
+    margin: 0.75rem 0 1.25rem;
+    color: #475569;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.gmaps-open-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 999px;
+    background: #1a73e8;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-weight: 700;
+    font-size: 0.98rem;
+    box-shadow: 0 8px 20px rgba(26, 115, 232, 0.28);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.gmaps-open-btn:hover {
+    background: #1558b0;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(26, 115, 232, 0.34);
+}
+
+.gmaps-btn-icon {
+    flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+    .gmaps-link-panel {
+        padding: 1.5rem 1rem 1.35rem;
+    }
+
+    .gmaps-open-btn {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .gmaps-wordmark {
+        font-size: 1.05rem;
+    }
+}
+
+/* ─── نموذج طلب عقار ─── */
+.request-property-form .req-star { color: #dc2626; }
+.request-property-form .req-hint {
+    display: block;
+    margin-top: 0.35rem;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+.request-property-form .req-form-errors {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    white-space: pre-line;
+    font-weight: 600;
+}
+.request-property-form .req-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+}
+@media (max-width: 700px) {
+    .request-property-form .req-form-grid { grid-template-columns: 1fr; }
+}
+.req-district-filter { margin-bottom: 0.65rem; }
+.req-district-selected {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 1.75rem;
+    margin-bottom: 0.65rem;
+}
+.req-district-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(27, 79, 156, 0.1);
+    color: #1B4F9C;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+.req-district-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.45rem;
+    max-height: 220px;
+    overflow: auto;
+    padding: 0.65rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+.req-district-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0.45rem 0.55rem;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    user-select: none;
+}
+.req-district-chip:has(input:checked) {
+    background: #1B4F9C;
+    border-color: #1B4F9C;
+    color: #fff;
+}
+.req-district-chip input {
+    accent-color: #1B4F9C;
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #propertiesList .property-card.stack-card {
+        transform: none !important;
+        filter: none !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .property-type-nav .ptype-btn,
+    .property-type-nav .ptype-btn .ptype-icon,
+    .property-type-nav .ptype-btn::after {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

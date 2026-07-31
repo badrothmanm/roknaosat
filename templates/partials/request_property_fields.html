@@ -1,0 +1,133 @@
+{% comment %}حقول مشتركة لنموذج طلب عقار — الصفحة والمودال{% endcomment %}
+<div class="form-grid-2 req-form-grid">
+    <div class="form-group">
+        <label class="form-label">اسم العميل <span class="req-star">*</span></label>
+        <input type="text" name="client_name" required placeholder="الاسم الكريم" class="form-input">
+    </div>
+    <div class="form-group">
+        <label class="form-label">رقم الجوال <span class="req-star">*</span></label>
+        <input type="tel" name="phone" required placeholder="05xxxxxxxx" class="form-input" inputmode="tel" autocomplete="tel">
+    </div>
+</div>
+
+<div class="form-grid-2 req-form-grid">
+    <div class="form-group">
+        <label class="form-label">نوع الطلب <span class="req-star">*</span></label>
+        <select name="request_type" required class="form-input" data-budget-trigger>
+            <option value="شراء">شراء (تملك)</option>
+            <option value="إيجار">إيجار</option>
+            <option value="إستثمار">إستثمار</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label class="form-label">نوع الاستخدام <span class="req-star">*</span></label>
+        <select name="usage_type" required class="form-input">
+            <option value="سكني">سكني</option>
+            <option value="تجاري">تجاري</option>
+        </select>
+    </div>
+</div>
+
+<div class="form-grid-2 req-form-grid">
+    <div class="form-group">
+        <label class="form-label">نوع العقار <span class="req-star">*</span></label>
+        <select name="property_type" required class="form-input">
+            <option value="">اختر...</option>
+            <option value="فيلا">فيلا</option>
+            <option value="شقة">شقة</option>
+            <option value="عمارة">عمارة</option>
+            <option value="قصر">قصر</option>
+            <option value="دور">دور</option>
+            <option value="أرض">أرض</option>
+            <option value="مزرعة">مزرعة</option>
+            <option value="استراحة">استراحة</option>
+            <option value="محل تجاري">محل تجاري</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label class="form-label">عمر العقار</label>
+        <input type="text" name="property_age" placeholder="مثلاً: جديد، 5 سنوات" class="form-input">
+    </div>
+</div>
+
+<div class="form-grid-2 req-form-grid">
+    <div class="form-group">
+        <label class="form-label">الميزانية <span class="req-star">*</span></label>
+        <select name="budget_range" required class="form-input" data-budget-range>
+            <option value="">اختر النطاق...</option>
+            <optgroup label="شراء / استثمار" data-budget-group="buy">
+                {% for value, label in budget_ranges_buy %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </optgroup>
+            <optgroup label="إيجار (سنوي)" data-budget-group="rent" disabled hidden>
+                {% for value, label in budget_ranges_rent %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </optgroup>
+        </select>
+        <small class="req-hint">اختر نطاقاً مناسباً لنوع الطلب</small>
+    </div>
+    <div class="form-group">
+        <label class="form-label">المساحة تقريباً (م²)</label>
+        <input type="number" name="area" placeholder="300" class="form-input" min="0">
+    </div>
+</div>
+
+<div class="form-grid-2 req-form-grid">
+    <div class="form-group">
+        <label class="form-label">عدد الغرف</label>
+        <select name="rooms_count" class="form-input">
+            <option value="">اختياري</option>
+            {% for r in room_options %}
+            <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label class="form-label">عدد دورات المياه</label>
+        <select name="bathrooms_count" class="form-input">
+            <option value="">اختياري</option>
+            {% for b in bathroom_options %}
+            <option value="{{ b }}">{{ b }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<div class="form-grid-2 req-form-grid">
+    <div class="form-group">
+        <label class="form-label">عدد الأدوار</label>
+        <input type="number" name="floors_count" class="form-input" min="0" placeholder="اختياري">
+    </div>
+    <div class="form-group">
+        <label class="form-label">عدد الشقق</label>
+        <input type="number" name="apartments_count" class="form-input" min="0" placeholder="اختياري">
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="form-label">المدينة <span class="req-star">*</span></label>
+    <input type="text" name="city" required value="الرياض" class="form-input" readonly>
+</div>
+
+<div class="form-group">
+    <label class="form-label">أحياء الرياض المفضلة <span class="req-star">*</span></label>
+    <p class="req-hint">يمكنك اختيار أكثر من حي</p>
+    <input type="search" class="form-input req-district-filter" placeholder="ابحث عن حي..." autocomplete="off">
+    <div class="req-district-selected" data-district-selected aria-live="polite"></div>
+    <div class="req-district-grid" data-district-grid>
+        {% for d in riyadh_districts %}
+        <label class="req-district-chip">
+            <input type="checkbox" name="districts" value="{{ d }}">
+            <span>{{ d }}</span>
+        </label>
+        {% endfor %}
+    </div>
+    <input type="hidden" name="district" value="" data-district-joined>
+</div>
+
+<div class="form-group">
+    <label class="form-label">وصف إضافي</label>
+    <textarea name="description" rows="4" placeholder="اكتب تفاصيل إضافية..." class="form-textarea"></textarea>
+</div>

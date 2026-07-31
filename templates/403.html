@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>غير مصرح - {{ company_name|default:"جودة المستقبل" }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07101c;
+            --card: rgba(15, 23, 42, 0.88);
+            --gold: #c5a059;
+            --gold-bright: #e0c38c;
+            --muted: #94a3b8;
+            --border: rgba(197, 160, 89, 0.25);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(ellipse at top, #0e1a2a 0%, var(--bg) 60%);
+            font-family: "Cairo", sans-serif;
+            color: #fff;
+            padding: 18px;
+        }
+        .card {
+            width: min(100%, 620px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px 24px;
+            box-shadow: 0 18px 48px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        .icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            background: rgba(197, 160, 89, 0.18);
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            display: grid;
+            place-items: center;
+            color: var(--gold-bright);
+            font-size: 30px;
+            font-weight: 800;
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: clamp(1.25rem, 3vw, 1.55rem);
+            color: var(--gold-bright);
+        }
+        p {
+            margin: 0;
+            line-height: 1.8;
+            color: var(--muted);
+            font-size: 1rem;
+        }
+        .actions {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            text-decoration: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            color: var(--gold-bright);
+            background: rgba(255,255,255,0.03);
+        }
+        .btn--primary {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.28), rgba(197, 160, 89, 0.1));
+            border-color: var(--gold);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <section class="card" aria-live="polite">
+        <div class="icon">!</div>
+        <h1>ليس لديك الصلاحية</h1>
+        <p>فضلاً راجع الإدارة لمنحك الصلاحيات المطلوبة للوصول إلى هذه الصفحة.</p>
+        <div class="actions">
+            {% if request.user.is_authenticated and request.user.is_staff and not request.user.is_superuser %}
+            <a class="btn btn--primary" href="{% url 'listings:marketer-dashboard' %}">العودة إلى لوحة التحكم</a>
+            {% else %}
+            <a class="btn btn--primary" href="/admin/">العودة إلى لوحة التحكم</a>
+            {% endif %}
+            <a class="btn" href="/">العودة إلى الموقع</a>
+        </div>
+    </section>
+</body>
+</html>

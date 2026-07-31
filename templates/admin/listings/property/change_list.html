@@ -1,0 +1,552 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* DASHBOARD ENHANCEMENTS - UNIFIED DESIGN */
+    :root {
+        --frosted-bg: rgba(255, 255, 255, 0.08);
+        --frosted-border: rgba(255, 255, 255, 0.12);
+        --frosted-blur: blur(20px);
+        --gold-premium: #D4AF37;
+    }
+
+    /* MINI TIER 1 */
+    .dashboard-mini-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 0 5px;
+    }
+    .breadcrumbs-minimal { color: #8F9BB3; font-size: 0.85rem; }
+    .breadcrumbs-minimal a { color: var(--gold-premium); text-decoration: none; }
+    
+    .live-stats-compact {
+        display: flex;
+        gap: 12px;
+        font-size: 0.8rem;
+    }
+    .stat-pill {
+        color: #8F9BB3;
+        background: rgba(255,255,255,0.03);
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-pill strong { color: white; }
+
+    /* UNIFIED COMMAND BAR */
+    .unified-command-bar {
+        background: var(--frosted-bg);
+        backdrop-filter: var(--frosted-blur);
+        -webkit-backdrop-filter: var(--frosted-blur);
+        border: 1px solid var(--frosted-border);
+        border-radius: 16px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: sticky;
+        top: 10px;
+        z-index: 1018;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        min-height: 60px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .command-search-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .smart-search-minimal {
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        max-width: 500px;
+    }
+    .smart-search-minimal input {
+        background: none;
+        border: none;
+        color: white;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+    }
+    .smart-search-minimal i { color: var(--gold-premium); }
+
+    .selection-counter-badge {
+        background: var(--gold-premium);
+        color: #07101C;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    .command-dropdown { position: relative; }
+    .command-trigger {
+        background: none;
+        border: 1px solid var(--frosted-border);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .command-trigger:hover { border-color: var(--gold-premium); color: var(--gold-premium); background: rgba(212, 175, 55, 0.05); }
+
+    .frosted-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #0D1623;
+        border: 1px solid var(--frosted-border);
+        border-radius: 14px;
+        min-width: 260px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        z-index: 1028;
+        overflow: hidden;
+        animation: morphIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* قائمة الإجراءات: ارتفاع أقصى + تمرير لرؤية كل البنود (مثل حذف العرض) */
+    .frosted-dropdown-menu.frosted-dropdown--actions {
+        min-width: 280px;
+    }
+    .actions-dropdown-scroll {
+        max-height: min(70vh, 520px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        padding: 6px 0;
+        direction: rtl;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(212, 175, 55, 0.45) rgba(255, 255, 255, 0.06);
+    }
+    .actions-dropdown-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+    .actions-dropdown-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 8px;
+    }
+    .actions-dropdown-scroll::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.35);
+        border-radius: 8px;
+    }
+    .actions-dropdown-scroll .frosted-item {
+        flex-shrink: 0;
+    }
+    @keyframes morphIn {
+        from { transform: scale(0.95) translateY(-5px); opacity: 0; }
+        to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .frosted-dropdown-menu.active { display: block; }
+
+    .frosted-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        color: #D1D9E6;
+        text-decoration: none;
+        transition: 0.2s;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    .frosted-item:hover { background: rgba(212, 175, 55, 0.1); color: var(--gold-premium); }
+
+    .filter-scroll-area {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-bottom: 15px;
+    }
+    #changelist-filter h2 { display: none; }
+    #changelist-filter h3 { 
+        color: var(--gold-premium); 
+        font-size: 0.75rem; 
+        text-transform: uppercase; 
+        margin: 15px 18px 8px; 
+    }
+    #changelist-filter ul { list-style: none; padding: 0; margin: 0 10px; }
+    #changelist-filter li a {
+        display: block;
+        padding: 8px 15px;
+        color: #8F9BB3;
+        text-decoration: none;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+    #changelist-filter li.selected a {
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--gold-premium);
+        font-weight: 700;
+    }
+
+    .command-right-tools {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding-right: 15px;
+    }
+
+    .add-action-pill {
+        background: var(--gold-premium);
+        color: #07101C !important;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        text-decoration: none;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.85rem;
+    }
+
+    .property-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+        padding: 20px 5px;
+    }
+    .luxury-card {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+    .luxury-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border-color: rgba(212, 175, 55, 0.3);
+    }
+    .luxury-card.selected {
+        border-color: var(--gold-premium);
+        background: rgba(212, 175, 55, 0.03);
+    }
+
+    /* Mobile fix: prevent horizontal overflow and clipped controls/cards on Android */
+    @media (max-width: 991.98px) {
+        .dashboard-mini-nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 0;
+        }
+        .live-stats-compact {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .unified-command-bar {
+            position: static;
+            top: auto;
+            min-height: auto;
+            padding: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
+            overflow: visible;
+        }
+        .command-search-section {
+            flex: 1 1 100%;
+            min-width: 0;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .smart-search-minimal {
+            flex: 1 1 100%;
+            width: 100%;
+            min-width: 0;
+            max-width: none;
+        }
+        .command-dropdown {
+            flex: 1 1 calc(50% - 4px);
+            min-width: 0;
+        }
+        .command-trigger {
+            width: 100%;
+            justify-content: center;
+            padding: 8px 10px;
+            gap: 8px;
+        }
+        #selection-bar {
+            flex: 1 1 100%;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .command-right-tools {
+            flex: 1 1 100%;
+            width: 100%;
+            border-right: 0;
+            padding-right: 0;
+            justify-content: flex-start;
+        }
+        .add-action-pill {
+            width: 100%;
+            justify-content: center;
+        }
+        .property-card-grid {
+            padding: 10px 0;
+            gap: 12px;
+        }
+        .property-card-wrapper {
+            min-width: 0;
+            width: 100%;
+        }
+        .luxury-card {
+            padding: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form id="changelist-form" method="post" novalidate>{% csrf_token %}
+        {# Required for Django Actions #}
+        <div style="display:none">
+            <select name="action" style="display:none">
+                <option value="" selected>---------</option>
+                <option value="make_published">نشر العروض</option>
+                <option value="make_hidden">إخفاء العروض</option>
+                <option value="show_prices_action">إظهار السعر</option>
+                <option value="hide_prices_action">إخفاء السعر</option>
+                <option value="show_map_action">إظهار الخريطة</option>
+                <option value="hide_map_action">إخفاء الخريطة</option>
+                <option value="publish_to_haraj_job_action">إرسال للنشر الآلي (حراج)</option>
+                <option value="post_to_x_action">نشر على X</option>
+                <option value="post_to_wa_action">نشر على واتساب</option>
+                <option value="copy_property_text_action">نسخ للمنصات</option>
+                <option value="generate_ai_copy_action">توليد وصف AI</option>
+                <option value="export_to_sheets_action">تصدير لقوقل شيت</option>
+                <option value="delete_selected">حذف العرض</option>
+            </select>
+            <input type="hidden" name="select_across" value="0" class="select-across">
+            <input type="hidden" name="index" value="0">
+            {% if cl.formset %}
+                {{ cl.formset.management_form }}
+            {% endif %}
+        </div>
+    
+    {# ── MINI NAV & INFO ── #}
+    <div class="dashboard-mini-nav">
+        <div class="breadcrumbs-minimal">
+            <a href="/admin/">الرئيسية</a> / 
+            <span>إدارة العقارات</span> / 
+            <span style="color: white; font-weight: 700;">قائمة العقارات</span>
+        </div>
+        
+        <div class="live-stats-compact">
+            <div class="stat-pill">الكل: <strong>{{ header_stats.total }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(34, 197, 94, 0.2);">منشور: <strong style="color: #22C55E;">{{ header_stats.published }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(59, 130, 246, 0.2);">خاص: <strong style="color: #3B82F6;">{{ header_stats.private }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(239, 68, 68, 0.2);">مؤرشف: <strong style="color: #EF4444;">{{ header_stats.archived }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05);">جديد اليوم: <strong style="color: #D4AF37;">{{ header_stats.new_today }}</strong></div>
+        </div>
+    </div>
+
+    {# ── UNIFIED COMMAND CENTER ── #}
+    <div class="unified-command-bar">
+        <div class="command-search-section">
+            <div class="smart-search-minimal">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="ابحث باسم المالك، الحي، المدينة، الرقم المرجعي..." value="{{ cl.query }}" 
+                       onkeydown="if(event.key==='Enter'){ window.location.search = '?q=' + encodeURIComponent(this.value); return false; }">
+            </div>
+            
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-filter" style="color: var(--gold-premium);"></i> <span>تصفية</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+                <div class="frosted-dropdown-menu" style="min-width: 220px;" onclick="event.stopPropagation()">
+                    <div class="filter-scroll-area">
+                        {% if cl.has_filters %}
+                            <div id="changelist-filter">
+                                {% for spec in cl.filter_specs %}
+                                    {% admin_list_filter cl spec %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div id="selection-bar" style="display: none; align-items: center; gap: 10px;">
+                <div class="selection-counter-badge"><span id="select-count">0</span></div>
+                <div class="select-all-wrapper">
+                    <input type="checkbox" id="action-toggle" style="width: 16px; height: 16px; accent-color: var(--gold-premium); cursor: pointer;">
+                </div>
+            </div>
+
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-bolt" style="color: var(--gold-premium);"></i> <span>الإجراءات</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+                <div class="frosted-dropdown-menu frosted-dropdown--actions" onclick="event.stopPropagation()">
+                    <div class="actions-dropdown-scroll">
+                    <div class="frosted-item" onclick="applyAction('make_published')"><i class="fas fa-eye" style="color: #22c55e;"></i> نشر العقارات</div>
+                    <div class="frosted-item" onclick="applyAction('make_hidden')"><i class="fas fa-eye-slash" style="color: #64748b;"></i> إخفاء العروض</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                    <div class="frosted-item" onclick="applyAction('show_prices_action')"><i class="fas fa-dollar-sign" style="color: #ef4444;"></i> إظهار السعر</div>
+                    <div class="frosted-item" onclick="applyAction('hide_prices_action')"><i class="fas fa-minus-circle" style="color: #94a3b8;"></i> إخفاء السعر</div>
+                    <div class="frosted-item" onclick="applyAction('show_map_action')"><i class="fas fa-map-marked-alt" style="color: #3b82f6;"></i> إظهار الخريطة</div>
+                    <div class="frosted-item" onclick="applyAction('hide_map_action')"><i class="fas fa-map" style="color: #64748b;"></i> إخفاء الخريطة</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                    <div class="frosted-item" onclick="applyAction('publish_to_haraj_job_action')"><i class="fas fa-robot" style="color: #f59e0b;"></i> إرسال للنشر الآلي (حراج)</div>
+                    <div class="frosted-item" onclick="applyAction('post_to_x_action')"><i class="fab fa-twitter" style="color: #1da1f2;"></i> نشر على X</div>
+                    <div class="frosted-item" onclick="applyAction('post_to_wa_action')"><i class="fab fa-whatsapp" style="color: #25d366;"></i> نشر على واتساب</div>
+                    <div class="frosted-item" onclick="applyAction('copy_property_text_action')"><i class="fas fa-copy" style="color: #c9a24a;"></i> نسخ للمنصات</div>
+                    <div class="frosted-item" onclick="applyAction('generate_ai_copy_action')"><i class="fas fa-magic" style="color: #8b5cf6;"></i> وصف AI إبداعي</div>
+                    <div class="frosted-item" onclick="applyAction('export_to_sheets_action')"><i class="fas fa-file-csv" style="color: #4285F4;"></i> تصدير لقوقل شيت</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                    <div class="frosted-item" onclick="applyAction('delete_selected')" style="color: #ef4444;"><i class="fas fa-trash-alt"></i> حذف العرض</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="command-right-tools">
+            <a href="{% url 'admin:listings_property_add' %}" class="add-action-pill">
+                <i class="fas fa-plus"></i> إضافة عقار
+            </a>
+        </div>
+    </div>
+
+    {# ── CARD GRID ── #}
+    <div class="property-card-grid">
+        {% for result in results %}
+            <div class="property-card-wrapper" style="position: relative;">
+                <input type="checkbox" name="_selected_action" value="{{ result.pk }}" class="action-select" style="position: absolute; top: 15px; right: 15px; z-index: 20; width: 20px; height: 20px; accent-color: #D4AF37; cursor: pointer;">
+                
+                <a href="{{ result.edit_url }}" class="luxury-card" style="display: block; text-decoration: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; padding-right: 30px;">
+                        <span style="color: #D4AF37; font-weight: 800; font-size: 0.85rem;">#{{ result.listing_id }}</span>
+                        {{ result.status_html|safe }}
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <span class="card-title-lg" style="display: block; color: white; font-size: 1.2rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ result.title }}</span>
+                        <div style="display: flex; gap: 10px; margin-top: 6px;">
+                            <span style="color: #D4AF37; font-size: 0.85rem; background: rgba(212, 175, 55, 0.1); padding: 2px 8px; border-radius: 4px;">{{ result.property_type }}</span>
+                            <span style="color: #D4AF37; font-size: 0.85rem; background: rgba(212, 175, 55, 0.1); padding: 2px 8px; border-radius: 4px;">{{ result.offer_type }}</span>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.02);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">السعر المطلوب:</span>
+                            <span style="color: white; font-weight: 800; font-size: 1.1rem;">{{ result.price }} <small style="font-size: 0.65rem; color: #D4AF37;">ريال</small></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.6); font-size: 0.85rem;">
+                            <i class="fas fa-map-marker-alt" style="color: #D4AF37;"></i> {{ result.city }} - {{ result.district }}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">تاريخ الرفع: {{ result.date }}</span>
+                        <div style="display: flex; gap: 10px;">
+                            <object><a href="{{ result.qr_url }}" target="_blank" style="color: #D4AF37; font-size: 0.9rem; text-decoration: none;" onclick="event.stopPropagation()"><i class="fas fa-qrcode"></i></a></object>
+                            <i class="fas fa-external-link-alt" style="color: rgba(255,255,255,0.2); font-size: 0.85rem;"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <div style="text-align:center; padding:80px; color:#F3F4F6; width:100%; grid-column: 1 / -1; opacity: 0.6;">
+                لا توجد عقارات حالياً.
+            </div>
+        {% endfor %}
+    </div>
+
+    {% block pagination %}{% pagination cl %}{% endblock %}
+
+    </form>
+</div>
+
+<script>
+    function jh_toggleDropdown(element, event) {
+        if (event) { event.stopPropagation(); }
+        const parent = element.closest('.command-dropdown');
+        const menu = parent.querySelector('.frosted-dropdown-menu');
+        const isActive = menu.classList.contains('active');
+        document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        if (!isActive) menu.classList.add('active');
+    }
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+    });
+
+    function applyAction(actionName) {
+        const selected = document.querySelectorAll('.action-select:checked');
+        if (selected.length === 0) {
+            alert('يرجى اختيار عقار واحد على الأقل.');
+            return;
+        }
+        const form = document.getElementById('changelist-form');
+        const actionInput = form.querySelector('select[name="action"]');
+        if (actionInput) {
+            actionInput.value = actionName;
+            form.submit();
+        }
+    }
+
+    function updateSelectionUI() {
+        const checked = document.querySelectorAll('.action-select:checked');
+        const selectionBar = document.getElementById('selection-bar');
+        const countSpan = document.getElementById('select-count');
+        const bar = document.querySelector('.unified-command-bar');
+        
+        if (checked.length > 0) {
+            selectionBar.style.display = 'flex';
+            countSpan.textContent = checked.length;
+            bar.style.borderColor = 'var(--gold-premium)';
+        } else {
+            selectionBar.style.display = 'none';
+            bar.style.borderColor = 'var(--frosted-border)';
+        }
+    }
+
+    document.getElementById('action-toggle').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.action-select');
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+            const card = cb.closest('.property-card-wrapper').querySelector('.luxury-card');
+            if (this.checked) card.classList.add('selected');
+            else card.classList.remove('selected');
+        });
+        updateSelectionUI();
+    });
+
+    document.querySelectorAll('.action-select').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const card = this.closest('.property-card-wrapper').querySelector('.luxury-card');
+            if (this.checked) card.classList.add('selected');
+            else card.classList.remove('selected');
+            updateSelectionUI();
+        });
+    });
+</script>
+{% endblock %}

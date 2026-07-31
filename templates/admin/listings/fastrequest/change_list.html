@@ -1,0 +1,434 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --frosted-bg: rgba(255, 255, 255, 0.08);
+        --frosted-border: rgba(255, 255, 255, 0.12);
+        --frosted-blur: blur(20px);
+        --gold-premium: #D4AF37;
+    }
+
+    .dashboard-mini-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 0 5px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .breadcrumbs-minimal { color: #8F9BB3; font-size: 0.85rem; }
+    .breadcrumbs-minimal a { color: var(--gold-premium); text-decoration: none; }
+
+    .live-stats-compact {
+        display: flex;
+        gap: 12px;
+        font-size: 0.8rem;
+        flex-wrap: wrap;
+    }
+    .stat-pill {
+        color: #8F9BB3;
+        background: rgba(255,255,255,0.03);
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-pill strong { color: white; }
+
+    .unified-command-bar {
+        background: var(--frosted-bg);
+        backdrop-filter: var(--frosted-blur);
+        -webkit-backdrop-filter: var(--frosted-blur);
+        border: 1px solid var(--frosted-border);
+        border-radius: 16px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: sticky;
+        top: 10px;
+        z-index: 1018;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        min-height: 60px;
+        margin-bottom: 18px;
+    }
+
+    .command-search-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .smart-search-minimal {
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 200px;
+        max-width: 520px;
+    }
+    .smart-search-minimal input {
+        background: none;
+        border: none;
+        color: white;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+    }
+    .smart-search-minimal i { color: var(--gold-premium); }
+
+    #selection-bar-fast { display: none; align-items: center; gap: 10px; }
+    .selection-counter-badge {
+        background: var(--gold-premium);
+        color: #07101C;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    .command-dropdown { position: relative; }
+    .command-trigger {
+        background: none;
+        border: 1px solid var(--frosted-border);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .command-trigger:hover { border-color: var(--gold-premium); color: var(--gold-premium); background: rgba(212, 175, 55, 0.05); }
+
+    .frosted-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #0D1623;
+        border: 1px solid var(--frosted-border);
+        border-radius: 14px;
+        min-width: 260px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        z-index: 1028;
+        overflow: hidden;
+    }
+    .frosted-dropdown-menu.active { display: block; }
+
+    .frosted-dropdown-menu.frosted-dropdown--actions { min-width: 280px; }
+    .actions-dropdown-scroll {
+        max-height: min(70vh, 480px);
+        overflow-y: auto;
+        padding: 6px 0;
+        direction: rtl;
+    }
+
+    .frosted-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        color: #D1D9E6;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    .frosted-item:hover { background: rgba(212, 175, 55, 0.1); color: var(--gold-premium); }
+    .frosted-item i { width: 18px; text-align: center; }
+
+    .marketer-initial {
+        width: 24px;
+        height: 24px;
+        background: var(--gold-premium);
+        color: #07101C;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .filter-scroll-area {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-bottom: 15px;
+    }
+    #changelist-filter h2 { display: none; }
+    #changelist-filter h3 {
+        color: var(--gold-premium);
+        font-size: 0.75rem;
+        margin: 15px 18px 8px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    #changelist-filter h3:first-of-type { border-top: none; padding-top: 0; }
+    #changelist-filter ul { list-style: none; padding: 0; margin: 0 10px; }
+    #changelist-filter li a {
+        display: block;
+        padding: 8px 15px;
+        color: #8F9BB3;
+        text-decoration: none;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+    #changelist-filter li a:hover { background: rgba(255,255,255,0.05); color: white; }
+    #changelist-filter li.selected a {
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--gold-premium);
+        font-weight: 700;
+    }
+
+    .command-right-tools {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding-right: 15px;
+    }
+    .add-action-pill {
+        background: var(--gold-premium);
+        color: #07101C !important;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        text-decoration: none;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.85rem;
+    }
+    .add-action-pill:hover { filter: brightness(1.1); color: #07101C !important; }
+
+    .fastrequest-changelist-inner .module { background: transparent; border: none; }
+    .fastrequest-changelist-inner #changelist-form .results { overflow-x: auto; }
+
+    @media (max-width: 991.98px) {
+        .dashboard-mini-nav { display: none; }
+        .unified-command-bar { flex-wrap: wrap; padding: 10px; top: 6px; z-index: 1018; }
+        .smart-search-minimal { max-width: none; }
+        .command-trigger span { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+        {% if cl.formset %}
+            <div>{{ cl.formset.management_form }}</div>
+        {% endif %}
+
+        <div style="display:none">
+            <select name="action" class="django-actions-select">
+                <option value="" selected>---------</option>
+                <option value="mark_as_read">تحديد كمقروء</option>
+                <option value="mark_as_unread">تحديد كغير مقروء</option>
+                <option value="assign_to_me">إسناد لي</option>
+                <option value="assign_to_marketer">إسناد لمسوق</option>
+                <option value="ai_reply_to_fast_request">توليد رد ذكي (AI) للعميل</option>
+                <option value="delete_selected">حذف البيانات</option>
+            </select>
+            <input type="hidden" name="marketer_id" id="marketer_id_input_fast">
+            <input type="hidden" name="select_across" value="0" class="select-across">
+            <input type="hidden" name="index" value="0">
+        </div>
+
+        <div class="dashboard-mini-nav">
+            <div class="breadcrumbs-minimal">
+                <a href="{% url 'admin:index' %}">الرئيسية</a> /
+                <span>إدارة العقارات والطلبات</span> /
+                <span style="color: white; font-weight: 700;">الطلبات السريعة</span>
+            </div>
+            {% if header_stats %}
+            <div class="live-stats-compact">
+                <div class="stat-pill">الكل: <strong>{{ header_stats.total }}</strong></div>
+                <div class="stat-pill" style="border-color: rgba(239,68,68,0.25);">غير مقروء: <strong style="color:#f87171;">{{ header_stats.unread }}</strong></div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="unified-command-bar" id="fastrequest-command-bar">
+            <div class="command-search-section">
+                <div class="smart-search-minimal">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="q" placeholder="ابحث بالاسم، رقم الجوال، نص الطلب…" value="{{ cl.query }}"
+                           onkeydown="if(event.key==='Enter'){ window.location.search = '?q=' + encodeURIComponent(this.value); return false; }">
+                </div>
+
+                <div class="command-dropdown">
+                    <button type="button" class="command-trigger" onclick="jh_toggleDropdownFast(this, event)">
+                        <i class="fas fa-filter" style="color: var(--gold-premium);"></i> <span>تصفية</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div class="frosted-dropdown-menu" style="min-width: 220px;" onclick="event.stopPropagation()">
+                        <div class="filter-scroll-area">
+                            {% if cl.has_filters %}
+                                <div id="changelist-filter">
+                                    {% for spec in cl.filter_specs %}
+                                        {% admin_list_filter cl spec %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div style="padding: 20px; color: #8F9BB3; font-size: 0.85rem; text-align: center;">لا توجد فلاتر متاحة.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="selection-bar-fast">
+                    <div class="selection-counter-badge"><span id="select-count-fast">0</span></div>
+                </div>
+
+                <div class="command-dropdown">
+                    <button type="button" class="command-trigger" onclick="jh_toggleDropdownFast(this, event)">
+                        <i class="fas fa-bolt" style="color: var(--gold-premium);"></i> <span>الإجراءات</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div class="frosted-dropdown-menu frosted-dropdown--actions" onclick="event.stopPropagation()">
+                        <div class="actions-dropdown-scroll">
+                            <div class="frosted-item" onclick="applyActionFast('mark_as_read')"><i class="fas fa-check-double" style="color:#22c55e;"></i> تحديد كمقروء</div>
+                            <div class="frosted-item" onclick="applyActionFast('mark_as_unread')"><i class="fas fa-envelope-open" style="color:#94a3b8;"></i> تحديد كغير مقروء</div>
+                            <div class="frosted-item" onclick="applyActionFast('ai_reply_to_fast_request')"><i class="fas fa-robot" style="color:#a78bfa;"></i> توليد رد ذكي (AI)</div>
+                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                            <div class="frosted-item" onclick="applyActionFast('delete_selected')" style="color:#f87171;"><i class="fas fa-trash"></i> حذف المحدد</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-dropdown">
+                    <button type="button" class="command-trigger" onclick="jh_toggleDropdownFast(this, event)">
+                        <i class="fas fa-user-plus" style="color: var(--gold-premium);"></i> <span>إسناد للمسوقين</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </button>
+                    <div class="frosted-dropdown-menu frosted-dropdown--actions" onclick="event.stopPropagation()">
+                        <div class="actions-dropdown-scroll">
+                            <div class="frosted-item" onclick="applyActionFast('assign_to_me')">
+                                <i class="fas fa-user-check" style="color:#22c55e;"></i> إسناد لي (أنا)
+                            </div>
+                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                            <div style="padding: 10px 18px; color: var(--gold-premium); font-size: 0.75rem; font-weight: 700;">المسوقين</div>
+                            {% for m in marketers %}
+                            <div class="frosted-item" onclick="applyAssignFast('{{ m.id }}')">
+                                <div class="marketer-initial">{{ m.initial }}</div>
+                                {{ m.name }}
+                            </div>
+                            {% empty %}
+                            <div style="padding: 12px 18px; color: #8F9BB3; font-size: 0.85rem;">لا يوجد مسوقون.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-right-tools">
+                <a href="{% url 'admin:listings_fastrequest_add' %}" class="add-action-pill">
+                    <i class="fas fa-plus"></i> أضف طلب سريع
+                </a>
+            </div>
+        </div>
+
+        <div class="fastrequest-changelist-inner">
+            {% block result_list %}
+                {% result_list cl %}
+            {% endblock %}
+            {% block pagination %}
+                <div class="changelist-footer mt-3">
+                    {% pagination cl %}
+                </div>
+            {% endblock %}
+        </div>
+    </form>
+</div>
+
+<script>
+(function() {
+    function jh_toggleDropdownFast(element, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        const parent = element.closest('.command-dropdown');
+        const menu = parent.querySelector('.frosted-dropdown-menu');
+        const isActive = menu.classList.contains('active');
+        document.querySelectorAll('#fastrequest-command-bar .frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        if (!isActive) menu.classList.add('active');
+    }
+    window.jh_toggleDropdownFast = jh_toggleDropdownFast;
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#fastrequest-command-bar .command-dropdown')) {
+            document.querySelectorAll('#fastrequest-command-bar .frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('#fastrequest-command-bar .frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        }
+    });
+
+    function applyActionFast(actionName) {
+        const selected = document.querySelectorAll('#changelist-form input[name="_selected_action"]:checked');
+        if (selected.length === 0) {
+            alert('يرجى اختيار طلب واحد على الأقل.');
+            return;
+        }
+        const form = document.getElementById('changelist-form');
+        const actionInput = form.querySelector('select[name="action"]');
+        if (actionInput) {
+            actionInput.value = actionName;
+            form.submit();
+        }
+    }
+    window.applyActionFast = applyActionFast;
+
+    function applyAssignFast(marketerId) {
+        document.getElementById('marketer_id_input_fast').value = marketerId;
+        applyActionFast('assign_to_marketer');
+    }
+    window.applyAssignFast = applyAssignFast;
+
+    function updateSelectionUIFast() {
+        const checked = document.querySelectorAll('#changelist-form input[name="_selected_action"]:checked');
+        const bar = document.getElementById('selection-bar-fast');
+        const count = document.getElementById('select-count-fast');
+        const cmd = document.getElementById('fastrequest-command-bar');
+        if (!bar || !count || !cmd) return;
+        if (checked.length > 0) {
+            bar.style.display = 'flex';
+            count.textContent = checked.length;
+            cmd.style.borderColor = 'var(--gold-premium)';
+        } else {
+            bar.style.display = 'none';
+            cmd.style.borderColor = 'var(--frosted-border)';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('changelist-form');
+        if (form) {
+            form.addEventListener('change', function(e) {
+                const t = e.target;
+                if (t && (t.name === '_selected_action' || t.id === 'action-toggle')) {
+                    updateSelectionUIFast();
+                }
+            });
+        }
+        updateSelectionUIFast();
+    });
+})();
+</script>
+{% endblock %}

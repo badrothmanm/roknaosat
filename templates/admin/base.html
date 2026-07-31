@@ -1,0 +1,701 @@
+{% load i18n static jazzmin admin_urls admin_sidebar_extras %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{# نسخة مخصّصة من قالب Jazzmin: إزالة truncatechars:21 من عناوين التطبيقات في الشريط المطوي — CSS لا يصل إلى القصّ من الخادم #}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <!--  Prevent admin panel being crawled by search engines -->
+    <meta name="robots" content="none, noarchive">
+    <script>
+        (function() {
+            var mode = localStorage.getItem('jazzmin-theme-mode') || '{{ jazzmin_ui.default_theme_mode|default:"light" }}';
+            if (mode === 'auto') {
+                mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-bs-theme', mode);
+        })();
+    </script>
+
+    <title>{% block title %}{{ title }} | {{ jazzmin_settings.site_title }}{% endblock %}</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+    <!-- Bootstrap and adminLTE -->
+    <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+
+    <!-- Bootswatch theme -->
+    <link rel="stylesheet" {% if jazzmin_ui.theme.name != 'default' %}href="{{ jazzmin_ui.theme.src }}"{% endif %} id="jazzmin-theme" data-theme-base="{% static 'vendor/bootswatch' %}" />
+    {% if jazzmin_settings.show_theme_chooser %}
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('jazzmin-theme');
+            if (savedTheme && savedTheme !== 'default') {
+                var link = document.getElementById('jazzmin-theme');
+                link.setAttribute('href', link.getAttribute('data-theme-base') + '/' + savedTheme + '/bootstrap.min.css');
+            }
+        })();
+    </script>
+    {% endif %}
+
+    <!-- Custom fixes for django -->
+    <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+    {% if jazzmin_settings.custom_css %}
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+    {% endif %}
+
+    <!-- favicons -->
+    <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+    <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+    {% if jazzmin_settings.use_google_fonts_cdn %}
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    {% endif %}
+
+    {% block extrastyle %} {% endblock %}
+    {# عرض معقول (لا يستحوذ على الشاشة) + نفس خلفية لوحة التحكم + نص بلا قصّ #}
+    <style id="jodah-sidebar-unbounded">
+        /* Kill Bootstrap bg-body-* grays inside Jazzmin */
+        html body.bg-body-tertiary,
+        html body .bg-body-tertiary,
+        html body .bg-body-secondary {
+            background-color: #07101c !important;
+            background-image: none !important;
+        }
+        html body .app-wrapper,
+        html body .app-main,
+        html body .app-content,
+        html body .app-content-header,
+        html body .container-fluid {
+            background-color: #07101c !important;
+            background-image: none !important;
+        }
+        html body #jazzy-sidebar.app-sidebar,
+        html body aside.app-sidebar#jazzy-sidebar {
+            width: min(100vw - 12px, 272px) !important;
+            min-width: 240px !important;
+            max-width: min(100vw - 12px, 272px) !important;
+            flex: 0 0 min(100vw - 12px, 272px) !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            background-color: #07101c !important;
+            background-image: none !important;
+            border-color: rgba(197, 160, 89, 0.2) !important;
+            min-height: 100vh !important;
+            height: 100vh !important;
+        }
+        html body #jazzy-sidebar .sidebar-brand,
+        html body #jazzy-sidebar .sidebar-wrapper,
+        html body #jazzy-sidebar .user-panel,
+        html body #jazzy-sidebar .sidebar-menu,
+        html body #jazzy-sidebar nav.mt-2 {
+            background-color: transparent !important;
+            background-image: none !important;
+        }
+        html body #jazzy-sidebar .user-panel {
+            border-bottom: 1px solid rgba(197, 160, 89, 0.12) !important;
+        }
+        html body #jazzy-sidebar .sidebar-wrapper {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            height: 100% !important;
+        }
+        html body #jazzy-sidebar .sidebar-menu,
+        html body #jazzy-sidebar nav {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            flex: 1 1 auto !important;
+        }
+        html body #jazzy-sidebar .nav-header {
+            display: block !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-break: break-word !important;
+            max-width: none !important;
+            width: 100% !important;
+            height: auto !important;
+            line-height: 1.45 !important;
+        }
+        html body #jazzy-sidebar .nav-link {
+            align-items: flex-start !important;
+            min-height: auto !important;
+        }
+        html body #jazzy-sidebar .nav-link > p,
+        html body #jazzy-sidebar .nav-link p {
+            display: block !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-break: break-word !important;
+        }
+        /* جوال: لا يفرض عرضاً شبه كامل للشريط — يتوافق مع overlay */
+        @media (max-width: 991.98px) {
+            html body #jazzy-sidebar.app-sidebar,
+            html body aside.app-sidebar#jazzy-sidebar {
+                width: min(85vw, 280px) !important;
+                max-width: 280px !important;
+                min-width: 240px !important;
+                flex: 0 0 auto !important;
+                min-height: 100dvh !important;
+                height: 100dvh !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                overscroll-behavior: contain !important;
+                touch-action: pan-y !important;
+            }
+            /*
+             * iOS/Safari: تمريران متداخلان (#jazzy-sidebar + nav/.sidebar-menu) يؤخران التمرير ثوانٍ.
+             * منطقة تمرير واحدة: يتمرّر الإطار الخارجي للشريط فقط.
+             */
+            html body #jazzy-sidebar .sidebar-wrapper {
+                overflow: visible !important;
+                height: auto !important;
+                max-height: none !important;
+                min-height: 100% !important;
+                flex: none !important;
+            }
+            html body #jazzy-sidebar nav,
+            html body #jazzy-sidebar .sidebar-menu {
+                overflow: visible !important;
+                overflow-x: visible !important;
+                overflow-y: visible !important;
+                flex: none !important;
+                min-height: 0 !important;
+                -webkit-overflow-scrolling: auto !important;
+            }
+
+            /* أهداف لمس أوضح لعناصر الشريط الجانبي على الجوال */
+            html body #jazzy-sidebar .nav-link,
+            html body #jazzy-sidebar .nav-treeview .nav-link {
+                min-height: 44px !important;
+                padding-top: 0.55rem !important;
+                padding-bottom: 0.55rem !important;
+            }
+
+            /* الجداول: تمرير أفقي سلس بدل كسر الأعمدة */
+            html body .app-content .table-responsive,
+            html body .app-content div[class*="table-responsive"] {
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            html body .app-content table {
+                min-width: 100% !important;
+                width: max-content !important;
+            }
+            html body #changelist table,
+            html body .change-list table {
+                min-width: 720px !important;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            /* هيدر الجوال: منع الدفع الأفقي وتماسك العناصر */
+            html body #jazzy-navbar .container-fluid {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                min-width: 0 !important;
+                gap: 0.25rem !important;
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+            html body #jazzy-navbar .navbar-nav {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                min-width: 0 !important;
+            }
+            html body #jazzy-navbar .nav-link,
+            html body #jazzy-navbar .btn,
+            html body #jazzy-navbar [data-lte-toggle="sidebar"],
+            html body #jazzy-navbar [data-bs-toggle="dropdown"] {
+                min-width: 44px !important;
+                min-height: 44px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0.45rem !important;
+            }
+            html body #jazzy-navbar .brand-link {
+                max-width: min(56vw, 210px) !important;
+                overflow: hidden !important;
+            }
+            html body #jazzy-navbar .brand-link .brand-text,
+            html body #jazzy-navbar .brand-link div[style*="font-weight"] {
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+        }
+    </style>
+    {% block extrahead %} {% endblock %}
+</head>
+<body class="layout-fixed{% if jazzmin_settings.show_sidebar %} sidebar-expand-lg{% else %} no-sidebar{% endif %} bg-body-tertiary {% sidebar_status request %} {% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %} {{ jazzmin_ui.body_classes }}" data-admin-utc-offset="{% now "Z" %}"{% if request.user.is_authenticated and request.user.is_staff and not request.user.is_superuser %} data-jodah-staff-sidebar="1"{% endif %}>
+
+    <div class="app-wrapper">
+
+    {% if not is_popup %}
+        <nav class="app-header navbar navbar-expand bg-body {{ jazzmin_ui.navbar_classes }}" id="jazzy-navbar">
+        <div class="container-fluid">
+            <ul class="navbar-nav">
+
+                {% if jazzmin_settings.show_sidebar %}
+                    <li class="nav-item">
+                        <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fas fa-bars"></i></a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a href="{% url 'admin:index' %}" class="brand-link">
+                            <img src="{% static jazzmin_settings.site_logo %}" alt="{{ jazzmin_settings.site_header }} Logo" class="{{ jazzmin_settings.site_logo_classes }} brand-image" style="opacity: .8; margin: 0 0 0 5px;">
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% get_top_menu user request.current_app|default:"admin" as top_menu %}
+                {% for link in top_menu %}
+                    <li class="nav-item d-none d-sm-inline-block{% if link.children %} dropdown{% endif %}">
+                        {% if link.children %}
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{ link.name }}
+                            </a>
+                            <div class="dropdown-menu">
+                                {% for child in link.children %}
+                                    <a class="dropdown-item" href="{{ child.url }}" {% if link.new_window %}target="_blank"{% endif %}>{{ child.name }}</a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <a href="{{ link.url }}" class="nav-link" {% if link.new_window %}target="_blank"{% endif %}>{{ link.name }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            {% if jazzmin_settings.search_model %}
+                {% for search_model in jazzmin_settings.search_models_parsed %}
+                    <form action="{{ search_model.search_url }}" method="GET" class="d-flex ms-2">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control form-control-navbar" name="q" type="search" placeholder="{% trans 'Search' %} {{ search_model.search_name }}..." aria-label="{% trans 'Search' %} {{ search_model.search_name }}...">
+                            <button class="btn btn-navbar" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                {% endfor %}
+            {% endif %}
+
+            <ul class="navbar-nav ms-auto">
+
+                {% if jazzmin_settings.show_ui_builder %}
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                        <i class="fas fa-th-large"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% if 'django.contrib.admindocs'|app_is_installed %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'django-admindocs-docroot' %}" role="button">
+                        <i class="fas fa-book"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if jazzmin_settings.show_theme_chooser %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link btn" data-bs-toggle="dropdown" href="#" title="{% trans 'Theme' %}">
+                        <i class="fas fa-palette"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" id="jazzy-theme-chooser">
+                        <span class="dropdown-header">{% trans 'Theme' %}</span>
+                        <div class="dropdown-divider"></div>
+                        <div class="px-3 pb-2">
+                            <select class="form-select form-select-sm" id="jazzmin-theme-select">
+                                {% for theme_name in jazzmin_ui.theme_list %}
+                                    <option value="{{ theme_name }}" {% if theme_name == jazzmin_ui.theme.name %}selected{% endif %}>
+                                        {{ theme_name|title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <span class="dropdown-header">{% trans 'Color Scheme' %}</span>
+                        <div class="dropdown-divider"></div>
+                        <div class="px-3 pb-2">
+                            <select class="form-select form-select-sm" id="jazzmin-mode-select">
+                                <option value="light">{% trans 'Light' %}</option>
+                                <option value="dark">{% trans 'Dark' %}</option>
+                                <option value="auto">{% trans 'Auto' %}</option>
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                {% endif %}
+
+                {% if jazzmin_settings.language_chooser %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link btn" data-bs-toggle="dropdown" href="#" title="Choose language">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end" id="jazzy-languagemenu">
+                            <form action="{% url 'set_language' %}" method="post">
+                                {% csrf_token %}
+                                <input name="next" type="hidden" value="{{ request.get_full_path|remove_lang:LANGUAGE_CODE }}" />
+                                {% for language in languages %}
+                                    <button
+                                        type="submit"
+                                        name="language"
+                                        value="{{ language.code }}"
+                                        class="dropdown-item {% if language.code == LANGUAGE_CODE %}active{% endif %}"
+                                        lang="{{ language.code }}"
+                                    >
+                                        {{ language.name_local|title }}
+                                    </button>
+                                {% endfor %}
+                            </form>
+                        </div>
+                    </li>
+                {% endif %}
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link btn" data-bs-toggle="dropdown" href="#" title="{{ request.user }}">
+                        <i class="far fa-user" aria-hidden="true"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end" id="jazzy-usermenu">
+                        <span class="dropdown-header">{% trans 'Account' %}</span>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'admin:password_change' %}" class="dropdown-item">
+                            <i class="fas fa-key me-2"></i> {% trans 'Change password' %}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item"><i class="fas fa-users me-2"></i> {% translate 'Log out' %}</button>
+                        </form>
+                        {% get_user_menu user request.current_app|default:"admin" as user_menu %}
+                        {% for link in user_menu %}
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ link.url }}" class="dropdown-item" {% if link.new_window %}target="_blank"{% endif %}>
+                                <i class="{{ link.icon }} me-2"></i> {% trans link.name %}
+                            </a>
+                        {% endfor %}
+                        <div class="dropdown-divider"></div>
+                        {% if perms|can_view_self %}
+                            <a href="{% jazzy_admin_url request.user request.current_app|default:"admin" %}" class="dropdown-item dropdown-footer">{% trans 'See Profile' %}</a>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+        </div>
+        </nav>
+        {% block sidebar %}
+        {% if jazzmin_settings.show_sidebar %}
+            {% get_side_menu as side_menu_list %}
+
+            <aside class="app-sidebar bg-body-secondary shadow {{ jazzmin_ui.sidebar_classes }}" id="jazzy-sidebar" data-bs-theme="dark">
+                <div class="sidebar-brand">
+                    <a href="/admin/" class="brand-link {{ jazzmin_ui.brand_classes }}" id="jazzy-logo">
+                        <img src="{% static jazzmin_settings.site_logo %}" alt="{{ jazzmin_settings.site_header }} Logo" class="{{ jazzmin_settings.site_logo_classes }} brand-image opacity-75 shadow">
+                        <span class="brand-text fw-light">{{ jazzmin_settings.site_brand }}</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-wrapper">
+                    <div class="user-panel d-flex">
+                        <div class="image">
+                            {% if jazzmin_settings|has_jazzmin_setting:"user_avatar" %}
+                                <img src="{% get_user_avatar request.user %}" width="160px" class="img-circle elevation-2" alt="User Image">
+                            {% else %}
+                                <i class="fas fa-inverse user-profile fa-user-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="info">
+                            {% if perms|can_view_self %}
+                                <a href="{% jazzy_admin_url request.user request.current_app|default:"admin" %}" class="d-block">{{ request.user }}</a>
+                            {% else %}
+                                <span class="d-block opacity-75">{{ request.user }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <nav class="mt-2">
+                        <ul class="nav sidebar-menu flex-column {{ jazzmin_ui.sidebar_list_classes }}" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false" id="jazzy-navigation">
+                            {% jodah_is_co_admin request.user as is_co_admin %}
+
+                            <li class="nav-item">
+                                <a href="{% if is_co_admin or request.user.is_superuser %}{% url 'admin:index' %}{% elif request.user.is_staff and not request.user.is_superuser %}{% url 'listings:marketer-dashboard' %}{% else %}{% url 'admin:index' %}{% endif %}" class="nav-link">
+                                    <i class="nav-icon fas fa-th-large"></i>
+                                    <p>{% if is_co_admin or request.user.is_superuser %}لوحة التحكم{% elif request.user.is_staff and not request.user.is_superuser %}إحصائياتي{% else %}لوحة التحكم{% endif %}</p>
+                                </a>
+                            </li>
+
+                            {% if request.user.is_authenticated and request.user.is_staff and not request.user.is_superuser and not is_co_admin %}
+                            <!-- Control Panel Treeview for Marketers -->
+                            <li class="nav-item has-treeview">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-tools"></i>
+                                    <p>
+                                        لوحة التحكم
+                                        <i class="nav-arrow fas fa-chevron-right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    {% if perms.listings.view_property %}
+                                    <li class="nav-item">
+                                        <a href="/admin/listings/property/" class="nav-link">
+                                            <i class="nav-icon fas fa-building"></i>
+                                            <p>العقارات</p>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% if perms.listings.view_propertylead %}
+                                    <li class="nav-item">
+                                        <a href="/admin/listings/propertylead/?assigned_to__id={{ request.user.id }}" class="nav-link">
+                                            <i class="nav-icon fas fa-user-clock"></i>
+                                            <p>العملاء المحتملون (لي)</p>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+
+                                    {% if perms.listings.view_propertyrequest %}
+                                    <li class="nav-item">
+                                        <a href="/admin/listings/propertyrequest/?assigned_to__id={{ request.user.id }}" class="nav-link">
+                                            <i class="nav-icon fas fa-tasks"></i>
+                                            <p>مهامي المسندة</p>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+
+                                    {% if perms.listings.view_propertysmartlink %}
+                                    <li class="nav-item">
+                                        <a href="/admin/listings/propertysmartlink/add/?marketer={{ request.user.id }}" class="nav-link">
+                                            <i class="nav-icon fas fa-plus-circle"></i>
+                                            <p>إضافة رابط ذكي</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/admin/listings/propertysmartlink/" class="nav-link">
+                                            <i class="nav-icon fas fa-external-link-alt"></i>
+                                            <p>الروابط الذكية (قائمة)</p>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                            {% endif %}
+
+                            {% if request.user.is_superuser or is_co_admin %}
+                            {% if jazzmin_settings.navigation_expanded %}
+                                {% for app in side_menu_list %}
+                                    {% if not is_co_admin or app.app_label != "auth" %}
+                                    <li class="nav-header">{{ app.name }}</li>
+                                    {% for model in app.models %}
+                                        {% if not is_co_admin or not model.url or "/admin/auth/" not in model.url %}
+                                        <li class="nav-item">
+                                            {% if model.url %}
+                                            <a href="{{ model.url }}" class="nav-link">
+                                                <i class="nav-icon {{ model.icon }}"></i> <p>{{ model.name }}</p>
+                                            </a>
+                                        {% else %}
+                                            <span class="nav-link disabled">
+                                                <i class="nav-icon {{ model.icon }}"></i> <p>{{ model.name }}</p>
+                                            </span>
+                                        {% endif %}
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {% for app in side_menu_list %}
+                                    {% if not is_co_admin or app.app_label != "auth" %}
+                                    <li class="nav-item has-treeview">
+                                        <a href="#" class="nav-link">
+                                            <i class="nav-icon {{ app.icon }}"></i>
+                                            <p>{{ app.name }} <i class="nav-arrow fas fa-chevron-right" aria-hidden="true"></i></p>
+                                        </a>
+                                        <ul class="nav nav-treeview">
+                                            {% for model in app.models %}
+                                                {% if not is_co_admin or not model.url or "/admin/auth/" not in model.url %}
+                                                <li class="nav-item">
+                                                    <a href="{% if model.url %}{{ model.url }}{% else %}javascript:void(0){% endif %}" class="nav-link">
+                                                        <i class="nav-icon {{ model.icon }}"></i>
+                                                        <p>{{ model.name }}</p>
+                                                    </a>
+                                                </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% endif %}
+
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+        {% endif %}
+        {% endblock %}
+    {% endif %}
+
+    <main class="app-main" {% if is_popup %}style="margin-left:0; padding-top: 20px;"{% endif %}>
+        {% block page_content %}
+            {% if not is_popup %}
+            <div class="app-content-header">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h3 class="mb-0">{% block content_title %}{% endblock %}</h3>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="float-sm-end">{% block breadcrumbs %}{% endblock %}</div>
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="app-content">
+                <div class="container-fluid">
+                    {% block messages %}
+                        {% for message in messages %}
+                            {% if message.tags == 'success' %}
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <i class="icon fa fa-check"></i> {{ message|capfirst }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% elif message.tags == 'error' %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="icon fa fa-ban"></i> {{ message|capfirst }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% elif message.tags == 'warning' %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    <i class="icon fa fa-exclamation-triangle"></i> {{ message|capfirst }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% elif message.tags == 'info' %}
+                                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                    <i class="icon fa fa-info"></i> {{ message|capfirst }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endblock messages %}
+                    <div class="row">
+                        {% block content %} {% endblock %}
+                    </div>
+                </div>
+            </div>
+
+
+        {% endblock %}
+    </main>
+
+{% block footer %}
+    {% if not is_popup %}
+        <footer class="app-footer {{ jazzmin_ui.footer_classes }}">
+            <div class="float-end d-none d-sm-inline">
+                <b>{% trans 'Jazzmin version' %}</b> {% get_jazzmin_version %}
+            </div>
+            {% autoescape off %}
+                <strong>{% trans 'Copyright' %} &copy; {% now 'Y' %} {{ jazzmin_settings.copyright }}.</strong> {% trans 'All rights reserved.' %}
+            {% endautoescape %}
+        </footer>
+        {% if jazzmin_settings.show_ui_builder %}
+            {% include 'jazzmin/includes/ui_builder_panel.html' %}
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+    </div>
+
+{% if jazzmin_settings.show_ui_builder %}
+<div id="codeBox" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">{% trans 'UI Configuration' %}</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans 'Copy this info your settings file to persist these UI changes' %}</p>
+                <pre><code></code></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn {{ jazzmin_ui.button_classes.danger }}" data-bs-dismiss="modal">{% trans 'Close' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- jQuery -->
+<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+<!-- Bootstrap 5 -->
+<script src="{% static "vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static "vendor/adminlte/js/adminlte.min.js" %}"></script>
+<!-- Django customisations -->
+<script src="{% static "jazzmin/js/main.js" %}"></script>
+
+{% if jazzmin_settings.custom_js %}
+<script src="{% static jazzmin_settings.custom_js %}"></script>
+{% endif %}
+
+<script>
+    (function () {
+        var mobileQuery = window.matchMedia('(max-width: 991.98px)');
+
+        function enforceMobileClosedSidebar() {
+            if (!mobileQuery.matches) return;
+            var body = document.body;
+            if (!body) return;
+            body.classList.remove('sidebar-open');
+            body.classList.add('sidebar-collapse');
+        }
+
+        document.addEventListener('DOMContentLoaded', enforceMobileClosedSidebar);
+        mobileQuery.addEventListener('change', function (event) {
+            if (event.matches) {
+                enforceMobileClosedSidebar();
+            }
+        });
+    })();
+</script>
+
+{% if jazzmin_settings.show_ui_builder %}
+<script>
+    window.ui_changes = {{ jazzmin_ui.raw|as_json|safe }};
+</script>
+<script src="{% static "jazzmin/js/ui-builder.js" %}"></script>
+{% endif %}
+
+{% block extrajs %}{% endblock %}
+
+</body>
+</html>

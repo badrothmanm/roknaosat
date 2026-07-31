@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>تنبيه إلغاء موعد</title>
+</head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:Tahoma,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:22px 8px;background:#f9fafb;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="620" cellspacing="0" cellpadding="0" style="max-width:620px;width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;">
+                    <tr>
+                        <td style="background:#7f1d1d;padding:18px 22px;color:#fff;">
+                            <h3 style="margin:0;font-size:20px;">تنبيه: تم إلغاء موعد معاينة</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:18px 22px;color:#111827;font-size:15px;line-height:1.8;">
+                            <p style="margin:0 0 10px;">تم إلغاء موعد عميل عبر رابط الإلغاء الذاتي.</p>
+                            <ul style="margin:0 0 12px;padding-right:18px;">
+                                <li>العميل: {{ appointment.client_name }}</li>
+                                <li>الجوال: {{ appointment.client_phone }}</li>
+                                <li>البريد: {{ appointment.client_email }}</li>
+                                <li>العقار: {{ property.listing_id }} - {{ property.property_type }} في {{ property.district }}</li>
+                                <li>التاريخ: {{ appointment.booking_date|date:"Y/m/d" }}</li>
+                                <li>الوقت: {{ appointment.booking_time|time:"h:i A" }}</li>
+                            </ul>
+                            <a href="{{ admin_change_url }}" style="display:inline-block;background:#0b1b3a;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;">
+                                فتح الموعد في لوحة الإدارة
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+

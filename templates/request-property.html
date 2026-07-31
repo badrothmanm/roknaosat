@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}طلب عقار | {{ company_name_full }}{% endblock %}
+{% block meta_description %}سجّل طلبك العقاري في الرياض: اختر أكثر من حي، حدد الميزانية وعدد الغرف، وسنبحث لك عن الأنسب.{% endblock %}
+
+{% block content %}
+<section class="section-padding" style="background: #f8fafc;">
+    <div class="container">
+        <div class="contact-hero reveal">
+            <h1 class="contact-title">طلب عقار</h1>
+            <div class="title-line" style="margin-bottom: 25px;"></div>
+            <p class="contact-subtitle">
+                سجّل طلبك في الرياض — اختر أكثر من حي وحدد ميزانيتك ومواصفاتك
+            </p>
+        </div>
+
+        <div class="form-card reveal" style="max-width: 860px; margin: 0 auto; border-top: 5px solid var(--brand-blue, #1B4F9C);">
+            <form id="request-property-form" class="request-property-form" method="post" action="/api/request-property/" novalidate>
+                {% csrf_token %}
+                <h3 style="color: var(--navy, #0f172a); margin-bottom: 1.5rem; text-align: center;">بيانات الطلب</h3>
+                <div id="request-property-errors" class="req-form-errors" hidden></div>
+                {% include "partials/request_property_fields.html" %}
+                <button type="submit" class="btn-whatsapp-card" style="padding: 1.25rem; font-size: 1.1rem; background: #1B4F9C;">
+                    إرسال الطلب <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

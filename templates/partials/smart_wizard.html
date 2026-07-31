@@ -1,0 +1,301 @@
+{% load static %}
+<!-- مساعد اختيار العقار — يُحمَّل من base ليعمل من الهيدر في كل الصفحات -->
+<div id="smart-wizard-modal" class="modal-overlay">
+    {% csrf_token %}
+    <div class="modal-card smart-wizard-card">
+        <button type="button" onclick="closeSmartWizard()" class="modal-close" aria-label="إغلاق">&times;</button>
+
+        <div class="wizard-progress-track">
+            <div id="wizard-progress" style="height: 100%; background: var(--gold); width: 20%; transition: width 0.3s;"></div>
+        </div>
+
+        <div id="wizard-step-1" class="wizard-step">
+            <h2 class="modal-title">وش تعتقد العقار الأنسب لك؟</h2>
+            <div class="modal-actions wizard-options-grid">
+                <button type="button" onclick="setWizardData('type', 'فيلا', 2)" class="btn-action btn-outline wizard-btn-option wizard-btn-option--tile">
+                    <i class="fas fa-home-lg fa-2x"></i><br>فيلا فاخرة
+                </button>
+                <button type="button" onclick="setWizardData('type', 'شقة', 2)" class="btn-action btn-outline wizard-btn-option wizard-btn-option--tile">
+                    <i class="fas fa-building fa-2x"></i><br>شقة عصرية
+                </button>
+                <button type="button" onclick="setWizardData('type', 'أرض', 2)" class="btn-action btn-outline wizard-btn-option wizard-btn-option--tile">
+                    <i class="fas fa-map fa-2x"></i><br>أرض استثمارية
+                </button>
+                <button type="button" onclick="setWizardData('type', 'قصر', 2)" class="btn-action btn-outline wizard-btn-option wizard-btn-option--tile">
+                    <i class="fas fa-crown fa-2x"></i><br>قصر ملكي
+                </button>
+            </div>
+        </div>
+
+        <div id="wizard-step-2" class="wizard-step" style="display: none;">
+            <h2 class="modal-title">وش الغرض الأساسي من العقار؟</h2>
+            <div class="modal-actions wizard-options-list">
+                <button type="button" onclick="setWizardData('purpose', 'سكن', 3)" class="btn-action btn-outline wizard-btn-option">
+                    🏠 للسكن والاستقرار
+                </button>
+                <button type="button" onclick="setWizardData('purpose', 'استثمار', 3)" class="btn-action btn-outline wizard-btn-option">
+                    📈 للاستثمار والنمو المالي
+                </button>
+            </div>
+        </div>
+
+        <div id="wizard-step-3" class="wizard-step" style="display: none;">
+            <h2 class="modal-title">أي منطقة في جدة تفضل؟</h2>
+            <div class="modal-actions wizard-options-grid">
+                <button type="button" onclick="setWizardData('district', 'شمال جدة', 4)" class="btn-action btn-outline wizard-btn-option">شمال جدة (أبحر، الشاطئ)</button>
+                <button type="button" onclick="setWizardData('district', 'وسط جدة', 4)" class="btn-action btn-outline wizard-btn-option">وسط جدة (الروضة، السلامة)</button>
+                <button type="button" onclick="setWizardData('district', 'شرق جدة', 4)" class="btn-action btn-outline wizard-btn-option">شرق جدة (السامر، المنار)</button>
+                <button type="button" onclick="setWizardData('district', 'جنوب جدة', 4)" class="btn-action btn-outline wizard-btn-option">جنوب جدة</button>
+            </div>
+        </div>
+
+        <div id="wizard-step-4" class="wizard-step" style="display: none;">
+            <h2 class="modal-title">كم الميزانية المرصودة تقريباً؟</h2>
+            <div class="modal-actions wizard-options-list">
+                <button type="button" onclick="setWizardData('budget', '1000000', 5)" class="btn-action btn-outline wizard-btn-option">أقل من مليون ريال</button>
+                <button type="button" onclick="setWizardData('budget', '3000000', 5)" class="btn-action btn-outline wizard-btn-option">1 - 3 مليون ريال</button>
+                <button type="button" onclick="setWizardData('budget', '10000000', 5)" class="btn-action btn-outline wizard-btn-option">3 - 10 مليون ريال</button>
+                <button type="button" onclick="setWizardData('budget', '20000000', 5)" class="btn-action btn-outline wizard-btn-option">أكثر من 10 مليون ريال</button>
+            </div>
+        </div>
+
+        <div id="wizard-step-5" class="wizard-step" style="display: none;">
+            <h2 class="modal-title">خطوة أخيرة لنصلك بأفضل العروض</h2>
+            <p class="wizard-subtext">سنقوم بإرسال قائمة مختارة بعناية تناسب اختياراتك السابقة.</p>
+            <div class="form-group">
+                <input type="text" id="wizard-name" placeholder="الاسم الكريم" class="filter-input" style="width: 100%; margin-bottom: 10px;">
+            </div>
+            <div class="form-group">
+                <input type="text" id="wizard-phone" placeholder="رقم الجوال (05xxxxxxxx)" class="filter-input" style="width: 100%; margin-bottom: 15px;">
+            </div>
+            <button type="button" onclick="submitWizard()" class="btn-search" style="width: 100%; padding: 15px; margin-top: 10px;">
+                إرسال الطلب والحصول على العروض
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .smart-wizard-card {
+        max-width: 600px;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding-top: 2rem;
+    }
+    .wizard-progress-track {
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .wizard-options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .wizard-options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .wizard-btn-option {
+        min-height: 54px;
+        height: auto;
+        padding: 14px;
+        line-height: 1.5;
+        white-space: normal;
+    }
+    .wizard-btn-option--tile {
+        min-height: 96px;
+        padding: 18px 12px;
+    }
+    .wizard-subtext {
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 16px;
+    }
+    @media (max-width: 640px) {
+        #smart-wizard-modal {
+            padding: 12px;
+        }
+        .smart-wizard-card {
+            border-radius: 14px;
+            max-height: calc(100vh - 24px);
+            padding: 1.25rem 1rem;
+        }
+        .wizard-options-grid {
+            grid-template-columns: 1fr;
+        }
+        .wizard-btn-option--tile {
+            min-height: 82px;
+        }
+    }
+</style>
+
+<script>
+(function () {
+    var wizardData = {};
+    var step5InitialHtml = '';
+
+    function resetWizardState() {
+        wizardData = {};
+        var step5 = document.getElementById('wizard-step-5');
+        if (step5InitialHtml && step5 && step5.innerHTML !== step5InitialHtml) {
+            step5.innerHTML = step5InitialHtml;
+        }
+        var nameEl = document.getElementById('wizard-name');
+        if (nameEl) nameEl.value = '';
+        var phoneEl = document.getElementById('wizard-phone');
+        if (phoneEl) phoneEl.value = '';
+    }
+
+    function openSmartWizard() {
+        var el = document.getElementById('smart-wizard-modal');
+        if (!el) return;
+        resetWizardState();
+        el.classList.add('active');
+        showWizardStep(1);
+    }
+
+    function closeSmartWizard() {
+        var el = document.getElementById('smart-wizard-modal');
+        if (el) el.classList.remove('active');
+    }
+
+    function showWizardStep(step) {
+        document.querySelectorAll('#smart-wizard-modal .wizard-step').forEach(function (s) {
+            s.style.display = 'none';
+        });
+        var target = document.getElementById('wizard-step-' + step);
+        if (target) target.style.display = 'block';
+        var progress = document.getElementById('wizard-progress');
+        if (progress) progress.style.width = ((step / 5) * 100) + '%';
+    }
+
+    function setWizardData(key, value, nextStep) {
+        wizardData[key] = value;
+        if (nextStep) showWizardStep(nextStep);
+    }
+
+    function _getCsrfToken() {
+        var el = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (el && el.value) return el.value;
+        var m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? decodeURIComponent(m[1].trim()) : '';
+    }
+
+    async function submitWizard() {
+        var phoneEl = document.getElementById('wizard-phone');
+        var nameEl = document.getElementById('wizard-name');
+        var phone = phoneEl ? phoneEl.value : '';
+        var name = nameEl ? nameEl.value : '';
+        if (!phone || !name) {
+            alert('فضلاً أدخل الاسم ورقم الجوال');
+            return;
+        }
+
+        var btn = document.querySelector('#wizard-step-5 .btn-search');
+        var btnDefaultHtml = 'إرسال الطلب والحصول على العروض';
+        if (!btn) {
+            alert('خطأ في الصفحة. أغلق النافذة وافتحها من جديد.');
+            return;
+        }
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+        btn.disabled = true;
+
+        var csrf = _getCsrfToken();
+        if (!csrf) {
+            alert('تعذر التحقق من الجلسة. حدّث الصفحة (F5) وحاول مرة أخرى.');
+            btn.innerHTML = btnDefaultHtml;
+            btn.disabled = false;
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('property_type', wizardData.type || '');
+        formData.append('usage_type', wizardData.purpose || '');
+        formData.append('district', wizardData.district || 'جدة');
+        formData.append('budget', wizardData.budget || '');
+        formData.append('description', 'طلب عبر المساعد الذكي. الغرض: ' + (wizardData.purpose || 'غير محدد'));
+        formData.append('csrfmiddlewaretoken', csrf);
+
+        var apiUrl = (typeof window !== 'undefined' && window.location && window.location.origin)
+            ? (window.location.origin + '/api/request-property/')
+            : '/api/request-property/';
+
+        var finishedOk = false;
+
+        try {
+            var res = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    'X-CSRFToken': csrf,
+                    'Accept': 'application/json',
+                },
+            });
+
+            var data = {};
+            try {
+                data = await res.json();
+            } catch (parseErr) {
+                alert('الخادم رد بصيغة غير متوقعة (رمز ' + res.status + '). تحقق من تشغيل Django على نفس العنوان.');
+                return;
+            }
+
+            if (data.success) {
+                finishedOk = true;
+                var step5 = document.getElementById('wizard-step-5');
+                if (step5) {
+                    step5.innerHTML =
+                        '<div style="text-align: center; padding: 30px;">' +
+                        '<i class="fas fa-check-circle fa-4x" style="color: #22c55e; margin-bottom: 20px;"></i>' +
+                        '<h3>تم استلام طلبك يا بطل!</h3>' +
+                        '<p>' + (data.message || '') + '</p>' +
+                        '<button type="button" onclick="closeSmartWizard()" class="btn-search" style="margin-top: 20px;">إغلاق</button>' +
+                        '</div>';
+                }
+                if (window.BehavioralTracker) BehavioralTracker.addScore(50, 'Completed Wizard');
+                return;
+            }
+
+            var errParts = [];
+            if (data.errors) {
+                for (var k in data.errors) {
+                    if (data.errors[k]) errParts.push(data.errors[k]);
+                }
+            }
+            var errMsg = data.error || data.message || errParts.join(' ') || ('فشل الطلب (رمز ' + res.status + ')');
+            alert(errMsg);
+        } catch (e) {
+            console.error('[wizard submit]', e);
+            var hint = '';
+            if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+                hint = '\n\n(تطوير: تأكد أن السيرفر يعمل: python manage.py runserver)\nالتفاصيل: ' + (e && e.message ? e.message : e);
+            }
+            alert('تعذر الاتصال بالخادم.' + hint);
+        } finally {
+            if (!finishedOk && btn && btn.parentNode) {
+                btn.innerHTML = btnDefaultHtml;
+                btn.disabled = false;
+            }
+        }
+    }
+
+    var initialStep5 = document.getElementById('wizard-step-5');
+    if (initialStep5) step5InitialHtml = initialStep5.innerHTML;
+
+    window.openSmartWizard = openSmartWizard;
+    window.closeSmartWizard = closeSmartWizard;
+    window.showWizardStep = showWizardStep;
+    window.setWizardData = setWizardData;
+    window.submitWizard = submitWizard;
+})();
+</script>

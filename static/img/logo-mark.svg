@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="'D1CF 'D#H37">
+  <rect width="64" height="64" rx="10" fill="#0A0A0A"/>
+  <g transform="translate(12,8)">
+    <path d="M4 2 H28 V10 H14 V52 H4 Z" fill="#141414" stroke="#3A3A3A" stroke-width="1.5"/>
+    <path d="M14 10 H38 V18 H26 V52 H14 Z" fill="#101010" stroke="#2E2E2E" stroke-width="1.2"/>
+    <rect x="28" y="18" width="7" height="34" fill="#1B4F9C"/>
+  </g>
+</svg>

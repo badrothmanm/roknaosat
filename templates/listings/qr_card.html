@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقة عقار - {{ property.listing_id }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            width: 350px;
+            /* مقاس مناسب للبطاقة */
+            padding: 50px 30px;
+            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 4px solid #1B4F9C;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+            margin-bottom: 30px;
+            line-height: 1;
+        }
+
+        .logo span {
+            color: #1B4F9C;
+        }
+
+        #qrcode {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        #qrcode img {
+            border: 8px solid #0f172a;
+            /* برواز للـ QR */
+            border-radius: 12px;
+            padding: 5px;
+            background: white;
+        }
+
+        .info {
+            margin-top: 35px;
+        }
+
+        .type {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .offer {
+            font-size: 1.4rem;
+            color: #1B4F9C;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .id {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 20px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .print-btn {
+            margin-top: 40px;
+            padding: 12px 25px;
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .print-btn:hover {
+            background: #1e293b;
+        }
+
+        /* تنسيق الطباعة */
+        @media print {
+            body {
+                background: white;
+                height: 100%;
+                display: block;
+                /* إلغاء التوسيط العمودي للصفحة لطباعة نظيفة */
+                margin: 0;
+                padding: 0;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 4px solid #1B4F9C;
+                /* اجعلها بمنتصف الصفحة بالطباعة */
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 350px;
+                /* الحفاظ على نفس العرض */
+                page-break-inside: avoid;
+            }
+
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="logo">الركن الأوسط</div>
+
+        <div id="qrcode"></div>
+
+        <div class="info">
+            <h2 class="type">{{ property.property_type }}</h2>
+            <h3 class="offer">
+                {% if property.offer_type == 'بيع' %}
+                للبيع
+                {% elif property.offer_type == 'إيجار' %}
+                للإيجار
+                {% else %}
+                {{ property.offer_type }}
+                {% endif %}
+            </h3>
+            <p class="id">رقم العرض: {{ property.listing_id }}</p>
+        </div>
+
+        <button class="print-btn" onclick="window.print()">
+            <span>طباعة البطاقة</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
+                <path
+                    d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 9a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2z" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        var url = "{{ property_url }}";
+
+        new QRCode(document.getElementById("qrcode"), {
+            text: url,
+            width: 220,
+            height: 220,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+</body>
+
+</html>

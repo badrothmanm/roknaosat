@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ company_name }} | عقارات جدة{% endblock %}
+
+{% block meta_description %}اكتشف عقارات سكنية وتجارية في جدة مع {{ company_name_full }}. اختيار هادئ وواضح يناسب احتياجك.{% endblock %}
+
+{% block content %}
+
+<section class="hero hero--calm hero--browse" aria-labelledby="hero-heading">
+    <div class="hero-calm-bg" aria-hidden="true">
+        <span class="hero-orb hero-orb--a"></span>
+        <span class="hero-orb hero-orb--b"></span>
+        <span class="hero-grid-soft"></span>
+    </div>
+    <div class="container hero-container">
+        <div class="hero-browse">
+            <header class="hero-browse-head">
+                <div class="hero-badge">
+                    <span class="pulse-dot"></span>
+                    <span>الرياض</span>
+                </div>
+                <p class="hero-brand">
+                    الركن الأوسط
+                    <span>للعقارات</span>
+                </p>
+                <h1 id="hero-heading" class="hero-heading">ابدأ من نوع العقار الذي تبحث عنه</h1>
+                <p class="hero-description">
+                    اختر قسماً للانتقال مباشرة إلى العروض المرتبطة به.
+                </p>
+            </header>
+
+            <nav class="property-type-nav" aria-label="أقسام العقارات">
+                <button type="button" class="ptype-btn" data-property-type="أرض">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-map"></i></span>
+                    <span class="ptype-label">أراضي</span>
+                </button>
+                <button type="button" class="ptype-btn" data-property-type="شقة">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-building"></i></span>
+                    <span class="ptype-label">شقق</span>
+                </button>
+                <button type="button" class="ptype-btn" data-property-type="عمارة">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-city"></i></span>
+                    <span class="ptype-label">عمائر</span>
+                </button>
+                <button type="button" class="ptype-btn" data-property-type="فيلا">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-home"></i></span>
+                    <span class="ptype-label">فلل</span>
+                </button>
+                <button type="button" class="ptype-btn" data-property-type="مزرعة">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-tree"></i></span>
+                    <span class="ptype-label">مزارع</span>
+                </button>
+                <button type="button" class="ptype-btn" data-property-type="قصر">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-chess-rook"></i></span>
+                    <span class="ptype-label">قصور</span>
+                </button>
+                <button type="button" class="ptype-btn" data-property-type="استراحة">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-umbrella-beach"></i></span>
+                    <span class="ptype-label">استراحات</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section id="offers" class="offers-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">عروضنا الحالية</h2>
+            <div class="title-line"></div>
+        </div>
+
+        <div class="filter-bar">
+            <select id="filter-offer-type" class="filter-select">
+                <option value="all">نوع العرض</option>
+                <option value="sale">بيع</option>
+                <option value="rent">إيجار</option>
+                <option value="investment">إستثمار</option>
+            </select>
+            <input type="text" id="filter-district-text" placeholder="ابحث باسم الحي..." class="filter-input">
+            <select id="filter-type" class="filter-select">
+                <option value="all">نوع العقار</option>
+                <option value="فيلا">فيلا</option>
+                <option value="قصر">قصر</option>
+                <option value="شقة">شقة</option>
+                <option value="أرض">أرض</option>
+                <option value="عمارة">عمارة</option>
+                <option value="مزرعة">مزرعة</option>
+                <option value="استراحة">استراحة</option>
+            </select>
+            <div class="price-group">
+                <input type="number" id="filter-min-price" placeholder="أقل سعر" class="filter-input">
+                <input type="number" id="filter-max-price" placeholder="أعلى سعر" class="filter-input">
+            </div>
+            <button id="btn-search" class="btn-search">
+                <i class="fas fa-search"></i> بحث
+            </button>
+        </div>
+
+        <div id="propertiesList" class="grid-listing">
+            <div id="loading-spinner" style="grid-column: 1/-1;">
+                <i class="fas fa-home-alt fa-3x fa-bounce" style="color: var(--brand-blue);"></i>
+                <p>جاري تحضير العروض...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- قسم العقارات المشاهدة مؤخراً -->
+<section id="recently-viewed-container" class="offers-section" style="display: none; background: #eef2f7; border-top: 1px solid #e4e9f0;">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">عقارات شاهدتها مؤخراً</h2>
+            <div class="title-line"></div>
+        </div>
+        <div id="recentlyViewedList" class="grid-listing">
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const behaviorStr = localStorage.getItem('jodah_behavior_v1');
+        if (behaviorStr) {
+            const behavior = JSON.parse(behaviorStr);
+            if (behavior.recentlyViewed && behavior.recentlyViewed.length > 0) {
+                const ids = behavior.recentlyViewed.join(',');
+                try {
+                    const res = await fetch(`/api/bulk/?ids=${ids}`);
+                    const props = await res.json();
+                    renderRecentlyViewed(props);
+                } catch (e) {
+                    console.error("Error fetching recently viewed:", e);
+                }
+            }
+        }
+    });
+
+    function renderRecentlyViewed(props) {
+        const container = document.getElementById('recentlyViewedList');
+        const section = document.getElementById('recently-viewed-container');
+        if (!container || props.length === 0) return;
+
+        section.style.display = 'block';
+        container.innerHTML = '';
+        
+        props.forEach(prop => {
+            container.innerHTML += `
+                <div class="property-card" style="background: white;">
+                    <div class="property-thumb">
+                        <img src="${prop.image_url}" alt="${prop.property_type}">
+                    </div>
+                    <div class="property-content">
+                        <h4 style="font-size: 1rem; margin-bottom: 10px;">${prop.property_type} في ${prop.district}</h4>
+                        <div style="color: var(--brand-blue); font-weight: bold; margin-bottom: 15px;">
+                            ${prop.display_price || prop.price + ' ريال'}
+                        </div>
+                        <a href="/property/${prop.id}/" class="btn-whatsapp-card" style="text-decoration: none; padding: 5px 10px; font-size: 0.9rem;">
+                            عرض التفاصيل
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+    }
+</script>
+
+<script>
+(function () {
+    function filterByPropertyType(type) {
+        const typeSelect = document.getElementById("filter-type");
+        const searchBtn = document.getElementById("btn-search");
+        if (typeSelect) typeSelect.value = type || "all";
+        document.querySelectorAll(".ptype-btn").forEach((btn) => {
+            btn.classList.toggle("is-active", btn.getAttribute("data-property-type") === type);
+        });
+        if (searchBtn) searchBtn.click();
+        else {
+            const offers = document.getElementById("offers");
+            if (offers) offers.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+
+    document.querySelectorAll(".ptype-btn").forEach((el) => {
+        el.addEventListener("click", function () {
+            filterByPropertyType(this.getAttribute("data-property-type") || "all");
+        });
+    });
+
+    const nav = document.querySelector(".property-type-nav");
+    if (!nav) return;
+
+    const reveal = () => nav.classList.add("is-inview");
+
+    // إظهار فوري إذا كانت الأقسام ظاهرة مسبقاً (شائع على سطح المكتب)
+    const rect = nav.getBoundingClientRect();
+    const visibleNow = rect.top < window.innerHeight * 0.9 && rect.bottom > 0;
+    if (visibleNow) {
+        requestAnimationFrame(reveal);
+    } else if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    reveal();
+                    io.disconnect();
+                }
+            });
+        }, { threshold: 0.15, rootMargin: "0px 0px -5% 0px" });
+        io.observe(nav);
+    } else {
+        reveal();
+    }
+
+    // احتياط: لا تبقَ الأقسام مخفية إذا تأخر الـ observer
+    setTimeout(reveal, 1200);
+})();
+</script>
+
+<div id="inquiry-modal" class="modal-overlay">
+    <div class="modal-card">
+        <button onclick="closeModal()" class="modal-close">&times;</button>
+        <div class="modal-icon"><i class="fab fa-whatsapp"></i></div>
+        <h2 class="modal-title">الاستفسار عن العقار</h2>
+        <div class="modal-body">يرجى إدخال بياناتك للتواصل معك عبر واتساب بخصوص هذا العقار.</div>
+        <form id="inquiry-form">
+            <div class="form-group">
+                <input type="text" name="name" placeholder="الاسم الكريم" class="filter-input" required style="margin-bottom: 1rem;">
+                <input type="tel" name="phone" placeholder="رقم الجوال" class="filter-input" required>
+                <input type="hidden" name="listing_id">
+                <input type="hidden" name="property_id">
+                <input type="hidden" name="listing_title">
+                <input type="hidden" name="listing_district">
+                <input type="hidden" name="listing_price">
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-whatsapp">
+                    إرسال عبر واتساب <i class="fab fa-whatsapp"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

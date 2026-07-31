@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>بطاقة عقار</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0A0A0A;
+            --gold: #1B4F9C;
+            --dark-red: #8B0000;
+            --bg-color: #f4f5f7;
+            --card-border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* --- Card Styles --- */
+        .card {
+            background-color: white;
+            border-radius: 20px;
+            border: 2px solid var(--navy);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .card-content-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .text-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-left: 20px;
+            overflow: hidden;
+            /* Fix for very long words pushing the layout */
+        }
+
+        .main-title {
+            font-size: clamp(40px, 6vw, 80px);
+            /* Responsive font size */
+            font-weight: 900;
+            line-height: 1.3;
+            color: var(--dark-red);
+            text-align: center;
+            margin: 0;
+            word-wrap: break-word;
+            /* Ensure long words break */
+        }
+
+        .divider {
+            width: 3px;
+            background-color: #000;
+            height: 250px;
+            margin: 0 40px;
+        }
+
+        .qr-section {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            /* Space between QR and logo */
+        }
+
+        .qr-img {
+            width: 280px;
+            height: 280px;
+            display: block;
+        }
+
+        .company-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--navy);
+        }
+
+        .company-brand i {
+            color: var(--gold);
+        }
+
+        /* --- Action Buttons --- */
+        .actions-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: var(--navy);
+            color: var(--gold);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            /* Fallback font */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            opacity: 0.9;
+        }
+
+        .btn-action i {
+            font-size: 20px;
+        }
+
+        /* --- Print Styles --- */
+        @media print {
+            body {
+                background-color: var(--bg-color) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .page-container {
+                max-width: none;
+                width: 100%;
+                padding: 40px 0;
+            }
+
+            .card {
+                border: 2px solid var(--navy) !important;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+                border-radius: 20px !important;
+                background-color: white !important;
+                page-break-inside: avoid;
+                margin: 0 auto;
+            }
+
+            .divider {
+                background-color: #000 !important;
+            }
+
+            /* Hide buttons when printing */
+            .actions-container {
+                display: none !important;
+            }
+
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-container">
+        <!-- Property Card -->
+        <div class="card" id="property-card">
+            <div class="card-content-wrapper">
+                <div class="text-section">
+                    <h1 class="main-title">{{ display_title|linebreaksbr }}</h1>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="qr-section">
+                    <img class="qr-img" src="data:image/png;base64,{{ qr_png_base64 }}" alt="QR Code" />
+                    <div class="company-brand">
+                        <span>{{ company_name }}</span>
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                </div>
+            </div>
+
+            {% if val_license or ad_number %}
+            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 10px; padding-top: 20px; border-top: 1px dashed #ddd; width: 100%;">
+                {% if val_license %}
+                <div style="text-align: center;">
+                    <div style="font-size: 14px; color: var(--navy); font-weight: 700; opacity: 0.7;">رقم ترخيص فال</div>
+                    <div style="font-size: 20px; color: var(--navy); font-weight: 900;">{{ val_license }}</div>
+                </div>
+                {% endif %}
+                {% if ad_number %}
+                <div style="text-align: center;">
+                    <div style="font-size: 14px; color: var(--navy); font-weight: 700; opacity: 0.7;">رقم الإعلان</div>
+                    <div style="font-size: 20px; color: var(--navy); font-weight: 900;">{{ ad_number }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions-container">
+            <button class="btn-action" onclick="shareCard()">
+                <i class="fa-solid fa-share-nodes"></i>
+                مشاركة
+            </button>
+            <button class="btn-action" onclick="window.print()">
+                <i class="fa-solid fa-print"></i>
+                طباعة A4
+            </button>
+            <button class="btn-action" onclick="saveAsPDF()">
+                <i class="fa-solid fa-file-pdf"></i>
+                حفظ كملف PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- html2pdf library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function saveAsPDF() {
+            const card = document.getElementById('property-card');
+
+            // Options for pdf generation
+            const opt = {
+                margin: 0,
+                filename: 'بطاقة-عقار.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Temporarily adjust card styles for better PDF output if needed
+            const originalBorder = card.style.border;
+            const originalShadow = card.style.boxShadow;
+
+            card.style.border = 'none';
+            card.style.boxShadow = 'none';
+
+            html2pdf().set(opt).from(card).save().then(() => {
+                // Restore original styles after PDF generation
+                card.style.border = originalBorder;
+                card.style.boxShadow = originalShadow;
+            });
+        }
+
+        function shareCard() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ display_title }} - {{ company_name }}',
+                    text: 'تفاصيل العقار',
+                    url: window.location.href, // Or the actual property URL if different
+                })
+                    .then(() => console.log('Successful share'))
+                    .catch((error) => console.log('Error sharing', error));
+            } else {
+                alert('عذراً، ميزة المشاركة غير مدعومة في متصفحك الحالي.');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+{% load static %}
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-grid">
+
+            <div class="footer-info">
+                <h3 class="footer-title">{{ company_name }}</h3>
+                <p class="footer-desc">نرافقك في اختيار العقار المناسب في جدة بوضوح وهدوء — من الاستفسار حتى اتخاذ القرار.</p>
+                <div class="license-badge">
+                    <i class="fas fa-id-card"></i> رخصة فال: 1200021644
+                </div>
+            </div>
+
+            <div class="footer-links-col">
+                <h4 class="footer-col-title">روابط هامة</h4>
+                <ul class="footer-links">
+                    <li><a href="/privacy/">سياسة الخصوصية</a></li>
+                    <li><a href="/terms/">شروط الاستخدام</a></li>
+                    <li><a href="/contact/">تواصل معنا</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact-col">
+                <h4 class="footer-col-title">اتصل بنا</h4>
+                <ul class="footer-contact-list">
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        جدة، المملكة العربية السعودية
+                    </li>
+                    <li>
+                        <i class="fas fa-phone-alt"></i>
+                        <a href="tel:+{{ company_whatsapp }}" class="footer-tel">
+                            {{ company_whatsapp }}
+                        </a>
+                    </li>
+                    <li class="footer-social-li">
+                        <div class="social-links">
+                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+                            <a href="#" aria-label="Snapchat"><i class="fab fa-snapchat"></i></a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 {{ company_name }}. جميع الحقوق محفوظة.</p>
+        </div>
+    </div>
+</footer>
+
+<a href="https://wa.me/{{ company_whatsapp }}" class="whatsapp-btn" target="_blank" rel="noopener" title="تواصل عبر واتساب">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+{% comment %} المساعد الذكي متوقف — لإعادة التفعيل احذف وسم comment
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+<script src="{% static 'js/chat.js' %}"></script>
+{% endcomment %}

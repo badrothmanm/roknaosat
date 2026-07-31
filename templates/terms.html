@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}الشروط والأحكام | {{ company_name_full }}{% endblock %}
+{% block meta_description %}تعرف على الشروط والأحكام الخاصة باستخدام موقع وخدمات {{ company_name_full }} لضمان تجربة آمنة
+وموثوقة.{% endblock %}
+
+{% block content %}
+<section class="section-padding" style="margin-top: 80px; background: #f8fafc; padding: 60px 0;">
+    <div class="container">
+        <div class="reveal" style="text-align: center; margin-bottom: 60px;">
+            <h1 style="font-size: 3rem; color: #0f172a; margin-bottom: 20px;">الشروط والأحكام</h1>
+            <div style="width: 80px; height: 4px; background: #1B4F9C; margin: 0 auto; margin-bottom: 25px;"></div>
+            <p style="max-width: 700px; margin: 0 auto; font-size: 1.1rem; color: #64748b;">
+                مرحباً بك في موقع {{ company_name_full }}. يرجى قراءة هذه الشروط والأحكام بعناية قبل استخدام الموقع، حيث
+                يمثل استخدامك للموقع موافقة صريحة على الالتزام بها.
+            </p>
+        </div>
+
+        <div class="card reveal reveal-delay-1"
+            style="padding: 40px; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); line-height: 1.8;">
+
+            <h3 style="color: #0f172a; margin-bottom: 15px; border-right: 4px solid #1B4F9C; padding-right: 15px;">1.
+                قبول الشروط</h3>
+            <p style="color: #475569; margin-bottom: 30px;">
+                بوصولك إلى هذا الموقع واستخدامه، فإنك توافق على الالتزام بهذه الشروط والأحكام والامتثال لجميع القوانين
+                واللوائح المعمول بها في المملكة العربية السعودية.
+            </p>
+
+            <h3 style="color: #0f172a; margin-bottom: 15px; border-right: 4px solid #1B4F9C; padding-right: 15px;">2.
+                حقوق الملكية الفكرية</h3>
+            <p style="color: #475569; margin-bottom: 30px;">
+                جميع المحتويات الموجودة على هذا الموقع، بما في ذلك النصوص والرسومات والشعارات والصور وأكواد البرمجيات،
+                هي ملكية حصرية لشركة {{ company_name_full }}، ومحمية بموجب قوانين حقوق الطبع والنشر.
+            </p>
+
+            <h3 style="color: #0f172a; margin-bottom: 15px; border-right: 4px solid #1B4F9C; padding-right: 15px;">3.
+                استخدام الموقع وخدماته</h3>
+            <p style="color: #475569; margin-bottom: 30px;">
+                تتعهد باستخدام الموقع لأغراض مشروعة فقط. يمنع منعا باتا استخدام الموقع لنشر أو إرسال أي مواد غير قانونية
+                أو التلاعب بالمعلومات العقارية المعروضة. يتحمل المستخدم كامل المسؤولية عن دقة المعلومات التي يدخلها،
+                سواء لتسجيل طلب عقار أو عرض عقار.
+            </p>
+
+            <h3 style="color: #0f172a; margin-bottom: 15px; border-right: 4px solid #1B4F9C; padding-right: 15px;">4.
+                التواصل ودقة البيانات</h3>
+            <p style="color: #475569; margin-bottom: 30px;">
+                يقر العميل بدقة البيانات المقدمة في النماذج والمراسلات ليتمكن فريقنا من خدمتكم بكفاءة وموثوقية عالية.
+                يحق ل{{ company_name_full }} تجاهل أي طلبات تحتوي على بيانات وهمية أو غير دقيقة.
+            </p>
+
+            <h3 style="color: #0f172a; margin-bottom: 15px; border-right: 4px solid #1B4F9C; padding-right: 15px;">5.
+                حدود المسؤولية</h3>
+            <p style="color: #475569; margin-bottom: 30px;">
+                نسعى جاهدين لتوفير معلومات عقارية دقيقة ومحدثة، ولكننا لا نضمن خلو الموقع من أي أخطاء أو توقفات. جودة
+                المستقبل العقارية غير مسؤولة بطريقة مباشرة أو غير مباشرة عن أية أضرار ناجمة عن استخدام أو عدم القدرة على
+                استخدام هذا الموقع أو محتوياته.
+            </p>
+
+            <h3 style="color: #0f172a; margin-bottom: 15px; border-right: 4px solid #1B4F9C; padding-right: 15px;">6.
+                التعديلات والإلغاء</h3>
+            <p style="color: #475569; margin-bottom: 0;">
+                تحتفظ {{ company_name_full }} بالحق في تعديل هذه الشروط والأحكام في أي وقت دون إشعار مسبق. تقع على عاتقك
+                مسؤولية مراجعة هذه الصفحة بشكل دوري للتعرف على أي تغييرات.
+            </p>
+
+            <div
+                style="margin-top: 50px; padding: 20px; background: #f8fafc; border-right: 4px solid #1B4F9C; border-radius: 8px;">
+                <p style="color: #334155; margin: 0; font-weight: 500;">
+                    <i class="fas fa-info-circle" style="color: #1B4F9C; margin-left: 10px;"></i>
+                    آخر تحديث للشروط والأحكام: فبراير 2026.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

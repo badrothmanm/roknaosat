@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}إلغاء الموعد | {{ company_name }}{% endblock %}
+
+{% block content %}
+<section style="padding: 70px 0 90px; background: linear-gradient(180deg, #07101c, #0b1b3a); min-height: 70vh;">
+    <div class="container" style="max-width: 760px;">
+        <div style="
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(201,162,74,0.3);
+            border-radius: 20px;
+            padding: 26px 24px;
+            color: #fff;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+            text-align: center;
+        ">
+            <div style="font-size: 3rem; color: #f87171; margin-bottom: 8px;">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h1 style="margin: 0 0 10px; color: #fff;">
+                {% if already_canceled %}الموعد ملغي مسبقاً{% else %}تم إلغاء الموعد بنجاح{% endif %}
+            </h1>
+            <p style="margin: 0; color: rgba(255,255,255,0.85);">
+                {% if already_canceled %}
+                    هذا الرابط تم استخدامه سابقاً، ولا يوجد أي إجراء إضافي مطلوب.
+                {% else %}
+                    تم تحديث حالة الموعد إلى «ملغي»، ويمكنك حجز موعد جديد في أي وقت.
+                {% endif %}
+            </p>
+            <div style="margin-top: 20px; text-align: right; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px;">
+                <div style="margin-bottom: 6px;"><strong>العقار:</strong> {{ appointment.property.property_type }} - {{ appointment.property.district }}</div>
+                <div style="margin-bottom: 6px;"><strong>التاريخ:</strong> {{ appointment.booking_date|date:"Y/m/d" }}</div>
+                <div><strong>الوقت:</strong> {{ appointment.booking_time|time:"h:i A" }}</div>
+            </div>
+            <a href="{% url 'listings:property-detail' appointment.property.pk %}" style="
+                margin-top: 20px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                text-decoration: none;
+                color: #0b1b3a;
+                background: #c9a24a;
+                border-radius: 12px;
+                padding: 10px 16px;
+                font-weight: 700;
+            ">
+                العودة إلى صفحة العقار
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

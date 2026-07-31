@@ -1,0 +1,18 @@
+{% if site_ticker and site_ticker.is_enabled and site_ticker.message %}
+<aside
+    class="site-ticker"
+    role="region"
+    aria-label="شريط التنبيه"
+    style="--ticker-bg: {{ site_ticker.background_color|default:'#1B4F9C' }}; --ticker-fg: {{ site_ticker.text_color|default:'#FFFFFF' }};"
+>
+    {% if site_ticker.label %}
+    <span class="site-ticker-label">{{ site_ticker.label }}</span>
+    {% endif %}
+    <div class="site-ticker-track" aria-live="polite">
+        <div class="site-ticker-move">
+            <span class="site-ticker-item">{{ site_ticker.message }}</span>
+            <span class="site-ticker-item" aria-hidden="true">{{ site_ticker.message }}</span>
+        </div>
+    </div>
+</aside>
+{% endif %}

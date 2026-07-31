@@ -1,0 +1,231 @@
+{% load static %}
+<header class="main-header" id="main-header">
+    <div class="header-inner">
+        <!-- Logo -->
+        <a href="/" class="site-logo" aria-label="{{ company_name_full }}">
+            <img src="{% static 'img/logo.png' %}" alt="{{ company_name_full }}" class="logo-full" width="160" height="140">
+        </a>
+
+        <!-- Side Drawer (يُنقل خارج الهيدر بالجافاسكربت على الجوال لضمان ظهور الأقسام) -->
+        <nav class="nav-drawer" id="nav-drawer" aria-hidden="false">
+            <div class="drawer-header">
+                <span class="drawer-logo">
+                    <img src="{% static 'img/logo.png' %}" alt="{{ company_name_full }}" class="drawer-logo-img" width="120" height="105">
+                </span>
+                <button class="drawer-close" id="drawer-close" aria-label="إغلاق" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">
+                        <i class="far fa-home nav-icon"></i>
+                        <span>الرئيسية</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link nav-link--wizard" onclick="event.preventDefault(); if (typeof openSmartWizard === 'function') openSmartWizard();">
+                        <i class="fas fa-magic nav-icon"></i>
+                        <span>ساعدني أختار عقاري</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#offers" class="nav-link">
+                        <i class="far fa-building nav-icon"></i>
+                        <span>العروض العقارية</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/contact/" class="nav-link">
+                        <i class="far fa-comment-dots nav-icon"></i>
+                        <span>اتصل بنا</span>
+                    </a>
+                </li>
+
+                <li class="nav-divider"></li>
+
+                <li class="nav-item">
+                    <a href="/request-property/" class="nav-link">
+                        <i class="far fa-search nav-icon"></i>
+                        <span>طلب عقار</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/submit-property/" class="nav-link">
+                        <i class="far fa-plus-square nav-icon"></i>
+                        <span>أعرض عقارك</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="shareSiteCard(event)" class="nav-link">
+                        <i class="far fa-share-square nav-icon"></i>
+                        <span>شارك الموقع</span>
+                    </a>
+                </li>
+                {% if not request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a href="/admin/" class="nav-link nav-link--admin">
+                        <i class="far fa-tachometer-alt nav-icon"></i>
+                        <span>لوحة التحكم</span>
+                        <i class="fas fa-chevron-left nav-arrow"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="drawer-footer">
+                <span>{{ company_name_full }}</span>
+            </div>
+        </nav>
+
+        <div class="header-actions">
+            <a href="/admin/" class="user-menu-btn user-menu-btn--direct" id="header-dashboard-link" aria-label="الانتقال إلى لوحة التحكم">
+                <i class="fas fa-user-shield" aria-hidden="true"></i>
+                <span class="user-name-label">لوحة التحكم</span>
+            </a>
+
+            <button class="hamburger" id="hamburger" aria-label="فتح القائمة" aria-expanded="false" type="button">
+                <span class="ham-line ham-top"></span>
+                <span class="ham-line ham-mid"></span>
+                <span class="ham-line ham-bot"></span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- خارج الهيدر حتى لا يُقصّ بسبب sticky/backdrop-filter -->
+<div class="nav-backdrop" id="nav-backdrop" hidden></div>
+
+<script>
+(function() {
+    const hamburger = document.getElementById('hamburger');
+    const drawer    = document.getElementById('nav-drawer');
+    const backdrop  = document.getElementById('nav-backdrop');
+    const closeBtn  = document.getElementById('drawer-close');
+    const header    = document.getElementById('main-header');
+    if (!hamburger || !drawer || !backdrop || !closeBtn || !header) return;
+
+    function isMobileNav() {
+        return window.matchMedia('(max-width: 1023px)').matches;
+    }
+
+    function releaseFocusFromDrawer() {
+        if (drawer.contains(document.activeElement)) {
+            document.activeElement.blur();
+            if (!isMobileNav() || !drawer.classList.contains('is-open')) {
+                hamburger.focus({ preventScroll: true });
+            }
+        }
+    }
+
+    // على الشاشات الصغيرة: انقل القائمة إلى body لظهور كامل الشاشة
+    function placeNavForViewport() {
+        const mobile = isMobileNav();
+        if (mobile) {
+            if (drawer.parentElement !== document.body) {
+                document.body.appendChild(backdrop);
+                document.body.appendChild(drawer);
+            }
+            backdrop.hidden = false;
+            // مغلقة افتراضياً على الجوال
+            if (!drawer.classList.contains('is-open')) {
+                releaseFocusFromDrawer();
+                drawer.setAttribute('aria-hidden', 'true');
+                drawer.setAttribute('inert', '');
+            }
+        } else {
+            const inner = header.querySelector('.header-inner');
+            const actions = header.querySelector('.header-actions');
+            if (inner && drawer.parentElement !== inner) {
+                inner.insertBefore(drawer, actions);
+            }
+            if (backdrop.parentElement !== document.body) {
+                document.body.appendChild(backdrop);
+            }
+            backdrop.hidden = true;
+            backdrop.classList.remove('is-visible');
+            drawer.classList.remove('is-open');
+            hamburger.classList.remove('is-open');
+            hamburger.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+            header.classList.remove('nav-open');
+            // على سطح المكتب القائمة ظاهرة دائماً — لا تُخفَ عن قارئ الشاشة
+            drawer.removeAttribute('inert');
+            drawer.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    function openNav() {
+        placeNavForViewport();
+        if (!isMobileNav()) return;
+        hamburger.setAttribute('aria-expanded', 'true');
+        hamburger.classList.add('is-open');
+        drawer.classList.add('is-open');
+        drawer.removeAttribute('inert');
+        drawer.setAttribute('aria-hidden', 'false');
+        backdrop.hidden = false;
+        backdrop.classList.add('is-visible');
+        document.body.style.overflow = 'hidden';
+        header.classList.add('nav-open');
+        // انقل التركيز داخل القائمة بعد الفتح
+        requestAnimationFrame(() => {
+            closeBtn.focus({ preventScroll: true });
+        });
+    }
+
+    function closeNav() {
+        // انقل التركيز خارج القائمة قبل aria-hidden لتفادي تحذير المتصفح
+        releaseFocusFromDrawer();
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.classList.remove('is-open');
+        drawer.classList.remove('is-open');
+        if (isMobileNav()) {
+            drawer.setAttribute('inert', '');
+            drawer.setAttribute('aria-hidden', 'true');
+        } else {
+            drawer.removeAttribute('inert');
+            drawer.setAttribute('aria-hidden', 'false');
+        }
+        backdrop.classList.remove('is-visible');
+        document.body.style.overflow = '';
+        header.classList.remove('nav-open');
+        hamburger.focus({ preventScroll: true });
+    }
+
+    placeNavForViewport();
+    window.addEventListener('resize', placeNavForViewport);
+
+    hamburger.addEventListener('click', () =>
+        drawer.classList.contains('is-open') ? closeNav() : openNav()
+    );
+    closeBtn.addEventListener('click', closeNav);
+    backdrop.addEventListener('click', closeNav);
+
+    drawer.querySelectorAll('.nav-link:not(.dropdown-toggle)').forEach(link => {
+        link.addEventListener('click', () => {
+            if (isMobileNav()) closeNav();
+        });
+    });
+
+    window.addEventListener('scroll', () => {
+        header.classList.toggle('is-scrolled', window.scrollY > 10);
+    }, { passive: true });
+})();
+
+function shareSiteCard(e) {
+    e.preventDefault();
+    const linkUrl = window.location.origin + "/link/";
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ company_name_full }}',
+            text: 'تصفح عروضنا العقارية والخدمات المميزة بسهولة عبر الرابط التالي:',
+            url: linkUrl
+        }).catch(err => console.log(err));
+    } else {
+        navigator.clipboard.writeText(linkUrl).then(() => {
+            alert("تم نسخ رابط البطاقة الذكية للموقع بنجاح!");
+        });
+    }
+}
+</script>

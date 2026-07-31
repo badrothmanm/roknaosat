@@ -1,0 +1,391 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}الرئيسية | لوحة تحكم {{ company_name }}{% endblock %}
+
+{% block content_title %}
+<h1 class="saas-card-title" style="margin-bottom: 20px;">
+    <i class="fas fa-th-large"></i> نظرة عامة على لوحة التحكم
+</h1>
+{% endblock %}
+
+{% block content %}
+{# توجيه المسوّقين من /admin/ يتم عبر MarketerAdminHomeRedirectMiddleware — لا حاجة لإعادة تحميل JS #}
+<style>
+    /* Absolute Force: Navy Blue Background for the Dashboard */
+    body,
+    .wrapper,
+    .content-wrapper,
+    .saas-dashboard {
+        background-color: #07101c !important;
+        background-image: none !important;
+    }
+</style>
+<script>
+    (function() {
+        try {
+            document.addEventListener("DOMContentLoaded", function() {
+                try {
+                    document.body.style.setProperty("background-color", "#07101c", "important");
+                    document.body.style.setProperty("background-image", "none", "important");
+                    var wrappers = document.querySelectorAll('.wrapper, .content-wrapper, .saas-dashboard');
+                    for (var i = 0; i < wrappers.length; i++) {
+                        wrappers[i].style.setProperty("background-color", "#07101c", "important");
+                        wrappers[i].style.setProperty("background-image", "none", "important");
+                    }
+                } catch (e) { console.warn('Dashboard style:', e); }
+            });
+        } catch (e) { console.warn('Dashboard init:', e); }
+    })();
+</script>
+
+{# ── Time Filters ── #}
+<div class="time-filters" id="dashboard-time-filters">
+    <button class="filter-btn active" data-period="all">كل الوقت</button>
+    <button class="filter-btn" data-period="today">اليوم</button>
+    <button class="filter-btn" data-period="7days">آخر 7 أيام</button>
+    <button class="filter-btn" data-period="30days">آخر 30 يوم</button>
+    <button class="filter-btn" data-period="6months">آخر 6 أشهر</button>
+    <button class="filter-btn" data-period="1year">آخر سنة</button>
+</div>
+
+{# ── KPI Cards ── #}
+<div id="dashboard-api-error" style="display:none; margin-bottom:12px; padding:10px 14px; background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); border-radius:8px; color:#D4AF37; font-size:0.9rem;">
+    تعذر تحميل بيانات الداشبورد. تحقق من الاتصال أو سجّل الدخول من جديد.
+</div>
+<div class="kpi-grid">
+    <div class="kpi-card" data-url="/admin/listings/property/"
+        onclick="location.href=this.dataset.url">
+        <div class="kpi-header">
+            <div class="kpi-title">إجمالي العقارات النشطة</div>
+            <div class="kpi-icon"><i class="fas fa-building"></i></div>
+        </div>
+        <div class="kpi-body">
+            <div class="kpi-value" id="kpi-properties">—</div>
+            <div class="kpi-trend neutral" id="kpi-properties-trend">...</div>
+        </div>
+    </div>
+
+    <div class="kpi-card" data-url="/admin/listings/propertyrequest/"
+        onclick="location.href=this.dataset.url">
+        <div class="kpi-header">
+            <div class="kpi-title">طلبات العقارات الجديدة</div>
+            <div class="kpi-icon"><i class="fas fa-search-location"></i></div>
+        </div>
+        <div class="kpi-body">
+            <div class="kpi-value" id="kpi-requests">—</div>
+            <div class="kpi-trend neutral" id="kpi-requests-trend">...</div>
+        </div>
+    </div>
+
+    <div class="kpi-card" data-url="/admin/listings/propertyoffer/"
+        onclick="location.href=this.dataset.url">
+        <div class="kpi-header">
+            <div class="kpi-title">عروض التسويق الواردة</div>
+            <div class="kpi-icon"><i class="fas fa-paper-plane"></i></div>
+        </div>
+        <div class="kpi-body">
+            <div class="kpi-value" id="kpi-offers">—</div>
+            <div class="kpi-trend neutral">...</div>
+        </div>
+    </div>
+
+    <div class="kpi-card" data-url="/admin/listings/propertymatch/"
+        onclick="location.href=this.dataset.url">
+        <div class="kpi-header">
+            <div class="kpi-title">المطابقات الذكية</div>
+            <div class="kpi-icon"><i class="fas fa-link"></i></div>
+        </div>
+        <div class="kpi-body">
+            <div class="kpi-value" id="kpi-matches">—</div>
+            <div class="kpi-trend neutral">...</div>
+        </div>
+    </div>
+
+    <div class="kpi-card" data-url="/admin/listings/fastrequest/"
+        onclick="location.href=this.dataset.url">
+        <div class="kpi-header">
+            <div class="kpi-title">الطلبات السريعة</div>
+            <div class="kpi-icon"><i class="fas fa-bolt"></i></div>
+        </div>
+        <div class="kpi-body">
+            <div class="kpi-value" id="kpi-fast-requests">—</div>
+            <div class="kpi-trend neutral" id="kpi-fast-requests-trend">...</div>
+        </div>
+    </div>
+</div>
+
+<div class="row align-items-stretch" style="margin-bottom: 30px;">
+    {# ── Col 1: Recent Offers ── #}
+    <div class="col-lg-4" style="margin-bottom:20px;">
+        <div class="saas-card" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="saas-card-header">
+                <h6 class="saas-card-title"><i class="fas fa-paper-plane" style="color:var(--jm-gold-bright)"></i> آخر
+                    عروض التسويق</h6>
+                <a href="/admin/listings/propertyoffer/" class="btn-outline"
+                    style="padding:4px 12px; font-size:0.8rem; border-radius:6px; text-decoration:none; white-space:nowrap;">عرض
+                    الكل</a>
+            </div>
+            <div class="activity-list" id="activity-offers-list"
+                style="flex: 1; overflow-y: auto; max-height: 450px; padding-right: 5px;">
+                <div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Col 2: Recent Requests ── #}
+    <div class="col-lg-4" style="margin-bottom:20px;">
+        <div class="saas-card" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="saas-card-header">
+                <h6 class="saas-card-title"><i class="fas fa-search-location" style="color:var(--jm-gold-bright)"></i>
+                    آخر طلبات العقارات</h6>
+                <a href="/admin/listings/propertyrequest/" class="btn-outline"
+                    style="padding:4px 12px; font-size:0.8rem; border-radius:6px; text-decoration:none; white-space:nowrap;">عرض
+                    الكل</a>
+            </div>
+            <div class="activity-list" id="activity-requests-list"
+                style="flex: 1; overflow-y: auto; max-height: 450px; padding-right: 5px;">
+                <div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin text-muted"></i></div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Col 3: AI Insights ── #}
+    <div class="col-lg-4" style="margin-bottom:20px;">
+        <div class="saas-card ai-panel" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="saas-card-header ai-panel-header">
+                <h6 class="saas-card-title">
+                    <i class="fas fa-brain ai-header-icon"></i> تحليل ذكي (AI)
+                </h6>
+            </div>
+
+            <div id="ai-insights-container" style="flex: 1; overflow-y: auto; max-height: 450px; padding-right: 5px;">
+                <div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin text-muted"></i> جاري
+                    التحليل...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPeriod = 'all';
+
+    // ── Animate counter (آمن ضد NaN وقيم غير رقمية) ──
+    function animateCount(id, target) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var num = Number(target);
+        if (num !== num || num < 0) num = 0;
+        var cur = parseInt(el.textContent.replace(/,/g, ''), 10);
+        if (cur !== cur) cur = 0;
+        if (cur === num) { el.textContent = num.toLocaleString('en-US'); return; }
+        var step = Math.max(1, Math.floor(Math.abs(num - cur) / 10));
+        var t = setInterval(function() {
+            if (cur < num) cur = Math.min(cur + step, num);
+            else cur = Math.max(cur - step, num);
+            el.textContent = cur.toLocaleString('en-US');
+            if (cur === num) clearInterval(t);
+        }, 30);
+    }
+
+    // ── Trend Label (آمن ضد غير النص) ──
+    function applyTrend(id, trendString) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var s = (trendString != null) ? String(trendString) : '—';
+        el.textContent = s || '—';
+        el.className = 'kpi-trend';
+        if (s.indexOf('↑') >= 0) el.classList.add('up');
+        else if (s.indexOf('↓') >= 0) el.classList.add('down');
+        else el.classList.add('neutral');
+    }
+
+    // ── Status mapper ──
+    function getRequestSourceLine(r) {
+        var src = (r && r.source) ? String(r.source) : '';
+        var label = (r && r.source_label_ar) ? String(r.source_label_ar) : '';
+        if (!label) return '';
+        var icon = 'fa-robot';
+        var color = '#94a3b8';
+        if (src === 'ai_chat') { icon = 'fa-robot'; color = '#60a5fa'; }
+        else if (src === 'website') { icon = 'fa-globe'; color = '#4ade80'; }
+        else if (src === 'whatsapp') { icon = 'fa-brands fa-whatsapp'; color = '#25D366'; }
+        else if (src === 'manual') { icon = 'fa-pen'; color = '#94a3b8'; }
+        return '<div class="activity-meta" style="margin-top:4px;font-size:0.78rem;"><i class="fas ' + icon + '" style="color:' + color + ';margin-left:6px;"></i>' + label + '</div>';
+    }
+
+    function getStatusBadge(status) {
+        const map = {
+            'new': { cls: 'status-gold', label: 'جديد' },
+            'under_review': { cls: 'status-blue', label: 'قيد المراجعة' },
+            'owner_review': { cls: 'status-purple', label: 'مراجعة صاحب العقار' },
+            'published': { cls: 'status-green', label: 'تم نشره' },
+            'rejected': { cls: 'status-red', label: 'مرفوض' },
+            'matched': { cls: 'status-matched', label: 'تمت المطابقة' },
+            'contacted': { cls: 'status-pending', label: 'تم التواصل' },
+            'working': { cls: 'status-blue', label: 'قيد العمل' },
+            'lost': { cls: 'status-rejected', label: 'مفقود/غير جاد' },
+            'closed': { cls: 'status-rejected', label: 'مغلق' }
+        };
+        const s = map[status] || { cls: 'status-pending', label: status };
+        return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+    }
+
+    var dashboardApiUrl = '/api/admin-stats/';
+    async function fetchDashboardData(period) {
+        currentPeriod = period;
+        var errEl = document.getElementById('dashboard-api-error');
+        if (errEl) errEl.style.display = 'none';
+        try {
+            var url = dashboardApiUrl + (dashboardApiUrl.indexOf('?') >= 0 ? '&' : '?') + 'period=' + encodeURIComponent(period);
+            const res = await fetch(url, { credentials: 'same-origin' });
+            if (!res.ok) throw new Error('API Error');
+            var data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            var kpis = data.kpis || {};
+            var activity = data.activity || {};
+            var aiData = data.ai_insights || { top_areas: [], most_viewed: [], closing_probability: '—', success_rate: '—', meta: {} };
+            var offers = activity.offers || [];
+            var requests = activity.requests || [];
+
+            // Render KPIs
+            animateCount('kpi-properties', kpis.total_properties);
+            applyTrend('kpi-properties-trend', kpis.properties_trend);
+            animateCount('kpi-requests', kpis.new_requests);
+            applyTrend('kpi-requests-trend', kpis.requests_trend);
+            animateCount('kpi-fast-requests', kpis.fast_requests);
+            applyTrend('kpi-fast-requests-trend', kpis.fast_requests_trend);
+            animateCount('kpi-offers', kpis.new_offers);
+            animateCount('kpi-matches', kpis.smart_matches);
+
+            // Render Offers Stream
+            const ol = document.getElementById('activity-offers-list');
+            if (ol && offers.length) {
+                ol.innerHTML = offers.map(o => `
+                    <a href="/admin/listings/propertyoffer/${o.id}/change/" class="activity-item">
+                        <div class="activity-icon"><i class="fas fa-home"></i></div>
+                        <div class="activity-content">
+                            <div class="activity-title">${o.name}</div>
+                            <div class="activity-meta"><i class="fas fa-phone-alt"></i> ${o.phone}</div>
+                        </div>
+                        <div class="activity-status-wrapper">
+                            ${getStatusBadge(o.status)}
+                            <div class="activity-time">${o.created_at}</div>
+                        </div>
+                    </a>
+                `).join('');
+            } else if (ol) {
+                ol.innerHTML = '<div style="padding:15px; color:var(--jm-text-subtle); text-align:center;">لا توجد عروض</div>';
+            }
+
+            // Render Requests Stream
+            const rl = document.getElementById('activity-requests-list');
+            if (rl && requests.length) {
+                rl.innerHTML = requests.map(r => `
+                    <a href="/admin/listings/propertyrequest/${r.id}/change/" class="activity-item">
+                        <div class="activity-icon"><i class="fas fa-user-tag"></i></div>
+                        <div class="activity-content">
+                            <div class="activity-title">${r.name} — ${r.property_type}</div>
+                            <div class="activity-meta"><i class="fas fa-map-marker-alt"></i> ${r.district || r.city || 'غير محدد'}</div>
+                            ${getRequestSourceLine(r)}
+                        </div>
+                        <div class="activity-status-wrapper">
+                            ${getStatusBadge(r.status)}
+                            <div class="activity-time">${r.created_at}</div>
+                        </div>
+                    </a>
+                `).join('');
+            } else if (rl) {
+                rl.innerHTML = '<div style="padding:15px; color:var(--jm-text-subtle); text-align:center;">لا توجد طلبات</div>';
+            }
+
+            // Render AI panel
+            var topAreas = aiData.top_areas || [];
+            var mostViewed = aiData.most_viewed || [];
+            const topAreasHtml = topAreas.length > 0
+                ? topAreas.map(function(a) { return '<div style="color:var(--jm-text-main);font-size:0.9rem;">' + (a.name || '') + ' <span style="float:left;color:var(--jm-text-subtle)">' + (a.count || 0) + '</span></div>'; }).join('')
+                : '<div style="color:var(--jm-text-subtle);font-size:0.9rem;">لا توجد بيانات كافية</div>';
+
+            const mostViewedHtml = mostViewed.length > 0
+                ? mostViewed.map(function(v) { return '<div style="color:var(--jm-text-main);font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><a href="/admin/listings/property/' + (v.id || '') + '/change/" style="color:inherit;text-decoration:none;">' + (v.title || '') + '</a> <span style="float:left;color:var(--jm-text-subtle)"><i class="fas fa-eye" style="color:var(--jm-gold);font-size:0.8rem;"></i> ' + (v.views || 0) + '</span></div>'; }).join('')
+                : '<div style="color:var(--jm-text-subtle);font-size:0.9rem;">لا توجد بيانات كافية</div>';
+
+            var meta = aiData.meta || {};
+            var closingSub = (meta.requests_in_period > 0)
+                ? ('طلبات بحالة مطابقة/مغلق: ' + (meta.requests_matched_or_closed || 0) + ' من ' + meta.requests_in_period + ' طلب في الفترة')
+                : 'لا توجد طلبات عقار في الفترة المختارة — النسبة غير محسوبة.';
+            var successSub = (meta.leads_in_period > 0)
+                ? ('نسبة العملاء المهتمين من إجمالي العملاء في الفترة')
+                : ((meta.requests_in_period > 0)
+                    ? ('طلبات لديها مطابقة: ' + (meta.requests_with_any_match || 0) + ' من ' + meta.requests_in_period + ' (لا يوجد عملاء محتملون في الفترة)')
+                    : 'لا توجد بيانات كافية لحساب النسبة.');
+
+            var aiContainer = document.getElementById('ai-insights-container');
+            if (aiContainer) aiContainer.innerHTML = `
+                <!-- Probability -->
+                <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
+                    <div class="probability-circle">${aiData.closing_probability || '—'}</div>
+                    <div>
+                        <div style="color:var(--jm-text-main); font-weight:700; font-size:1.1rem;">احتمالية إغلاق الصفقات</div>
+                        <div style="color:var(--jm-text-subtle); font-size:0.8rem; line-height:1.4;">${closingSub}</div>
+                    </div>
+                </div>
+                
+                <div class="insight-row">
+                    <div class="insight-label"><i class="fas fa-chart-line" style="color:var(--jm-gold-bright)"></i> نسبة النجاح المتوقعة</div>
+                    <div class="insight-value">${aiData.success_rate || '—'}</div>
+                </div>
+                <div style="color:var(--jm-text-subtle); font-size:0.78rem; margin:-8px 0 12px 0; line-height:1.4;">${successSub}</div>
+                
+                <div style="margin-top:20px;">
+                    <div style="color:var(--jm-gold-bright); font-weight:700; font-size:0.9rem; margin-bottom:10px; border-bottom:1px solid rgba(197, 160, 89, 0.2); padding-bottom:5px;">أفضل المناطق طلبًا</div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        ${topAreasHtml}
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <div style="color:var(--jm-gold-bright); font-weight:700; font-size:0.9rem; margin-bottom:10px; border-bottom:1px solid rgba(197, 160, 89, 0.2); padding-bottom:5px;">العقارات الأكثر مشاهدة</div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        ${mostViewedHtml}
+                    </div>
+                </div>
+            `;
+
+        } catch (e) {
+            console.error('Dashboard fetch error:', e);
+            if (errEl) {
+                errEl.textContent = 'تعذر تحميل بيانات الداشبورد. تحقق من سجلات الخادم.';
+                errEl.style.display = 'block';
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            fetchDashboardData(currentPeriod);
+            var btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(function(b) {
+                b.addEventListener('click', function(e) {
+                    btns.forEach(function(btn) { btn.classList.remove('active'); });
+                    var target = e.currentTarget;
+                    if (target && target.dataset) {
+                        target.classList.add('active');
+                        fetchDashboardData(target.dataset.period || 'all');
+                    }
+                });
+            });
+            setInterval(function() { fetchDashboardData(currentPeriod); }, 15000);
+        } catch (err) {
+            console.error('Dashboard init error:', err);
+            var errEl = document.getElementById('dashboard-api-error');
+            if (errEl) {
+                errEl.textContent = 'حدث خطأ في تحميل الصفحة. حدّث الصفحة وحاول مرة أخرى.';
+                errEl.style.display = 'block';
+            }
+        }
+    });
+</script>
+
+{% endblock %}

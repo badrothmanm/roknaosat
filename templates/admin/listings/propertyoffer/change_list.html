@@ -1,0 +1,658 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block content_title %}{% endblock %}
+
+{# مسار واضح في هيدر الجازمن (يظهر على الجوال؛ يصلح تلاصق «الرئيسية» و«إدارة») #}
+{% block breadcrumbs %}
+<nav class="jodah-admin-bc" dir="rtl" aria-label="مسار التنقل">
+    <a href="{% url 'admin:index' %}">الرئيسية</a>
+    <span class="jodah-admin-bc__sep" aria-hidden="true">/</span>
+    <span class="jodah-admin-bc__muted">إدارة العقارات والطلبات</span>
+    <span class="jodah-admin-bc__sep" aria-hidden="true">/</span>
+    <strong class="jodah-admin-bc__here">طلبات تسويق العقارات</strong>
+</nav>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+    /* DASHBOARD ENHANCEMENTS - SIMPLIFIED FROSTED GLASS */
+    :root {
+        --frosted-bg: rgba(255, 255, 255, 0.08);
+        --frosted-border: rgba(255, 255, 255, 0.12);
+        --frosted-blur: blur(20px);
+        --gold-premium: #D4AF37;
+    }
+
+    /* MINI TIER 1 */
+    .dashboard-mini-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 0 5px;
+    }
+    .breadcrumbs-minimal { color: #8F9BB3; font-size: 0.85rem; }
+    .breadcrumbs-minimal a { color: var(--gold-premium); text-decoration: none; }
+    
+    .live-stats-compact {
+        display: flex;
+        gap: 12px;
+        font-size: 0.8rem;
+    }
+    .stat-pill {
+        color: #8F9BB3;
+        background: rgba(255,255,255,0.03);
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-pill strong { color: white; }
+
+    /* UNIFIED COMMAND BAR */
+    .unified-command-bar {
+        background: var(--frosted-bg);
+        backdrop-filter: var(--frosted-blur);
+        -webkit-backdrop-filter: var(--frosted-blur);
+        border: 1px solid var(--frosted-border);
+        border-radius: 16px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: sticky;
+        top: 10px;
+        /* تحت الشريط العلوي (1030) والشريط الجانبي (1040+) حتى لا يغطي القائمة على الجوال */
+        z-index: 1018;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        min-height: 60px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* SEARCH MODE (DEFAULT) */
+    .command-search-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: 0.3s opacity;
+    }
+    .smart-search-minimal {
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        max-width: 500px;
+    }
+    .smart-search-minimal input {
+        background: none;
+        border: none;
+        color: white;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+    }
+    .smart-search-minimal i { color: var(--gold-premium); }
+
+    /* ACTION MODE (WHEN SELECTED) */
+    .command-actions-section {
+        display: none; /* Shown via JS */
+        flex: 1;
+        align-items: center;
+        gap: 20px;
+        animation: slideLeft 0.4s ease;
+    }
+    @keyframes slideLeft { 
+        from { transform: translateX(20px); opacity: 0; } 
+        to { transform: translateX(0); opacity: 1; } 
+    }
+
+    .selection-counter-badge {
+        background: var(--gold-premium);
+        color: #07101C;
+        padding: 0 12px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+        line-height: 1;
+        box-sizing: border-box;
+    }
+
+    /* DROPDOWNS REFINED */
+    .command-dropdown { position: relative; }
+    .command-trigger {
+        background: none;
+        border: 1px solid var(--frosted-border);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .command-trigger:hover { border-color: var(--gold-premium); color: var(--gold-premium); background: rgba(212, 175, 55, 0.05); }
+
+    .frosted-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #0D1623;
+        border: 1px solid var(--frosted-border);
+        border-radius: 14px;
+        min-width: 260px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        z-index: 1028;
+        overflow: hidden;
+        animation: morphIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes morphIn {
+        from { transform: scale(0.95) translateY(-5px); opacity: 0; }
+        to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .frosted-dropdown-menu.active { display: block; }
+
+    .frosted-dropdown-menu.frosted-dropdown--actions { min-width: 280px; }
+    .actions-dropdown-scroll {
+        max-height: min(70vh, 520px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        padding: 6px 0;
+        direction: rtl;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(212, 175, 55, 0.45) rgba(255, 255, 255, 0.06);
+        -webkit-overflow-scrolling: touch;
+    }
+    .actions-dropdown-scroll::-webkit-scrollbar { width: 8px; }
+    .actions-dropdown-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 8px; }
+    .actions-dropdown-scroll::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.35); border-radius: 8px; }
+    .actions-dropdown-scroll .frosted-item { flex-shrink: 0; }
+
+    .frosted-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        color: #D1D9E6;
+        text-decoration: none;
+        transition: 0.2s;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    .frosted-item:hover { background: rgba(212, 175, 55, 0.1); color: var(--gold-premium); }
+    .frosted-item i { width: 18px; text-align: center; }
+
+    /* DJANGO FILTER STYLING IN DROPDOWN */
+    .filter-scroll-area {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-bottom: 15px;
+    }
+    .filter-scroll-area::-webkit-scrollbar { width: 5px; }
+    .filter-scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .filter-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    #changelist-filter h2 { display: none; } /* Hide default title */
+    #changelist-filter h3 { 
+        color: var(--gold-premium); 
+        font-size: 0.75rem; 
+        text-transform: uppercase; 
+        margin: 15px 18px 8px; 
+        padding-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        letter-spacing: 1px;
+    }
+    #changelist-filter h3:first-of-type { border-top: none; padding-top: 0; }
+    
+    #changelist-filter ul { list-style: none; padding: 0; margin: 0 10px; }
+    #changelist-filter li { margin: 2px 0; }
+    #changelist-filter li a {
+        display: block;
+        padding: 8px 15px;
+        color: #8F9BB3;
+        text-decoration: none;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        transition: 0.2s;
+    }
+    #changelist-filter li a:hover { background: rgba(255,255,255,0.05); color: white; }
+    #changelist-filter li.selected a {
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--gold-premium);
+        font-weight: 700;
+    }
+
+    /* AVATARS COMPACT */
+    .avatar-mini {
+        width: 28px; height: 28px;
+        background: #1E293B;
+        color: var(--gold-premium);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.75rem;
+        border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    /* RIGHT TOOLS */
+    .command-right-tools {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding-right: 15px;
+    }
+
+    .add-action-pill {
+        background: var(--gold-premium);
+        color: #07101C !important;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        text-decoration: none;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.85rem;
+        transition: filter 0.2s;
+    }
+    .add-action-pill:hover { filter: brightness(1.1); }
+
+    /* لوحي + جوال — نفس حدود admin_custom للقوائم (991.98px) */
+    @media (max-width: 991.98px) {
+        .dashboard-mini-nav { display: none; }
+        .unified-command-bar {
+            flex-wrap: wrap;
+            padding: 10px;
+            top: 6px;
+            /* تمرير أوضح: لا تلتصق بقوة تحت الهيدر */
+            z-index: 1018;
+        }
+        .smart-search-minimal { max-width: none; }
+        .command-trigger span { display: none; }
+        /* يوجد زر «إضافة طلب» في الشريط — إخفاء FAB (عدة محددات لضمان التطبيق) */
+        #content-main .fab-container,
+        #changelist-form .fab-container,
+        .fab-container.fab-hide-on-mobile {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        .unified-command-bar .command-right-tools {
+            width: 100%;
+            flex-basis: 100%;
+            justify-content: center;
+            border-right: none !important;
+            padding-right: 0 !important;
+            margin-top: 6px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .unified-command-bar .add-action-pill {
+            width: 100%;
+            justify-content: center;
+            min-height: 46px;
+            font-size: 0.95rem;
+        }
+        .command-search-section {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .command-trigger {
+            min-width: 44px;
+            min-height: 44px;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form id="changelist-form" method="post" novalidate>{% csrf_token %}
+        {# Required for Django Actions #}
+        <div style="display:none">
+            <select name="action" style="display:none">
+                <option value="" selected>---------</option>
+                <option value="generate_whatsapp_message">رسالة واتساب للمالك</option>
+                <option value="mark_as_contacted">تم التواصل</option>
+                <option value="mark_as_reviewing">مراجعة الطلب (قيد المراجعة)</option>
+                <option value="mark_as_owner_review">مراجعة صاحب العقار</option>
+                <option value="publish_as_property">نشر العرض</option>
+                <option value="mark_as_rejected">العرض مرفوض</option>
+                <option value="delete_selected">حذف البيانات</option>
+                <option value="assign_to_me">إسناد لي (أنا)</option>
+                <option value="assign_to_marketer">إسناد لمسوق</option>
+            </select>
+            <input type="hidden" name="select_across" value="0" class="select-across">
+            <input type="hidden" name="index" value="0">
+            {% if cl.formset %}
+                {{ cl.formset.management_form }}
+            {% endif %}
+        </div>
+    
+    {# ── MINI NAV & INFO ── #}
+    <div class="dashboard-mini-nav">
+        <div class="breadcrumbs-minimal">
+            <a href="/admin/">الرئيسية</a> / 
+            <span>إدارة العقارات والطلبات</span> / 
+            <span style="color: white; font-weight: 700;">طلبات تسويق العقارات</span>
+        </div>
+        
+        <div class="live-stats-compact">
+            <div class="stat-pill">الكل: <strong>{{ header_stats.total }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(8, 145, 178, 0.25);">تم التواصل: <strong style="color: #0891B2;">{{ header_stats.contacted }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(59, 130, 246, 0.2);">قيد المراجعة: <strong style="color: #3B82F6;">{{ header_stats.under_review }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(139, 92, 246, 0.2);">مراجعة صاحب العقار: <strong style="color: #8B5CF6;">{{ header_stats.owner_review }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(16, 185, 129, 0.2);">تم نشره: <strong style="color: #10B981;">{{ header_stats.published }}</strong></div>
+            <div class="stat-pill" style="border-color: rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05);">جديد اليوم: <strong style="color: #D4AF37;">{{ header_stats.new_today }}</strong></div>
+        </div>
+    </div>
+
+    {# ── UNIFIED COMMAND CENTER ── #}
+    <div class="unified-command-bar">
+        {# PERMANENT COMMAND SECTION #}
+        <div class="command-search-section">
+            <div class="smart-search-minimal">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="ابحث باسم المالك، رقم الجوال..." value="{{ cl.query }}" 
+                       onkeydown="if(event.key==='Enter'){ window.location.search = '?q=' + encodeURIComponent(this.value); return false; }">
+            </div>
+            
+            {# 1. FILTER #}
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-filter" style="color: var(--gold-premium);"></i> <span>تصفية</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+                <div class="frosted-dropdown-menu" style="min-width: 220px;" onclick="event.stopPropagation()">
+                    <div class="filter-scroll-area">
+                        {% if cl.has_filters %}
+                            <div id="changelist-filter">
+                                {% for spec in cl.filter_specs %}
+                                    {% admin_list_filter cl spec %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div style="padding: 20px; color: #8F9BB3; font-size: 0.85rem; text-align: center;">لا توجد فلاتر متاحة.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# SELECTION COUNTER (Simple Badge) #}
+            <div id="selection-bar" style="display: none; align-items: center; gap: 10px;">
+                <div class="selection-counter-badge"><span id="select-count">0</span></div>
+                <div class="select-all-wrapper">
+                    <input type="checkbox" id="action-toggle" style="width: 16px; height: 16px; accent-color: var(--gold-premium); cursor: pointer;">
+                </div>
+            </div>
+
+            {# 2. ACTIONS #}
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-bolt" style="color: var(--gold-premium);"></i> <span>الإجراءات</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+                <div class="frosted-dropdown-menu frosted-dropdown--actions" onclick="event.stopPropagation()">
+                    <div class="actions-dropdown-scroll">
+                    <div class="frosted-item" onclick="applyAction('generate_whatsapp_message')"><i class="fab fa-whatsapp" style="color: #25D366;"></i> رسالة واتساب للمالك</div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_contacted')"><i class="fas fa-phone" style="color: #8b5cf6;"></i> تم التواصل</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_reviewing')"><i class="fas fa-search" style="color: #3b82f6;"></i> مراجعة الطلب (قيد المراجعة)</div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_owner_review')"><i class="fas fa-home" style="color: #a78bfa;"></i> مراجعة صاحب العقار</div>
+                    <div class="frosted-item" onclick="applyAction('publish_as_property')"><i class="fas fa-globe" style="color: #10b981;"></i> نشر العرض</div>
+                    <div class="frosted-item" onclick="applyAction('mark_as_rejected')" style="color: #f87171;"><i class="fas fa-times-circle"></i> العرض مرفوض</div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 5px 0;"></div>
+                    <div class="frosted-item" onclick="applyAction('delete_selected')" style="color: #ef4444;"><i class="fas fa-trash"></i> حذف البيانات</div>
+                    </div>
+                </div>
+            </div>
+
+            {# 3. ASSIGNMENT #}
+            <div class="command-dropdown">
+                <button type="button" class="command-trigger" style="border-color: #3b82f6; color: #3b82f6;" onclick="jh_toggleDropdown(this, event)">
+                    <i class="fas fa-user-plus"></i> <span style="color: #3b82f6;">إسناد</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </button>
+                <div class="frosted-dropdown-menu" onclick="event.stopPropagation()">
+                    <div class="frosted-item" onclick="applyAction('assign_to_me')">
+                        <div class="avatar-mini" style="background: #3b82f6; color: white;">Me</div>
+                        إسناد لي (أنا)
+                    </div>
+                    {% if marketers %}
+                        {% for m in marketers %}
+                            <div class="frosted-item" onclick="assignToMarketer('{{ m.id }}')">
+                                <div class="avatar-mini">{{ m.initial }}</div>
+                                {{ m.name }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# GLOBAL ADD BUTTON #}
+        <div class="command-right-tools">
+            <a href="{% url 'admin:listings_propertyoffer_add' %}" class="add-action-pill">
+                <i class="fas fa-plus"></i> إضافة طلب
+            </a>
+        </div>
+    </div>
+
+    {# REMOVED FILTER DRAWER HTML #}
+
+    {# ── CARD GRID ── #}
+    <div class="property-card-grid">
+        {% for result in results %}
+            <div class="property-card-wrapper" style="position: relative;">
+                {# Hidden Checkbox for Django Actions #}
+                <input type="checkbox" name="_selected_action" value="{{ result.id }}" class="action-select" style="position: absolute; top: 15px; right: 15px; z-index: 20; width: 20px; height: 20px; accent-color: #D4AF37; cursor: pointer;">
+                
+                <a href="{{ result.edit_url }}" class="luxury-card" style="display: block; text-decoration: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; padding-right: 30px;">
+                        <span style="color: {% if result.is_new %}#D4AF37{% else %}rgba(255,255,255,0.4){% endif %}; font-weight: 800; font-size: 0.85rem;">#{{ result.id }}</span>
+                        {{ result.status_html|safe }}
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <span class="card-title-lg" style="display: block; color: white; font-size: 1.2rem; font-weight: 700;">{{ result.owner_name }}</span>
+                        <span class="card-subtitle-gold" style="display: block; color: #D4AF37; font-size: 0.9rem; margin-top: 4px;">
+                            <i class="fas fa-map-marker-alt"></i> {{ result.city }} - {{ result.neighborhood|default:"—" }}
+                        </span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">المسوق المسند إليه:</span>
+                            <span style="color: #D4AF37; font-weight: 600; font-size: 0.85rem;">{{ result.assigned_to }}</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <div class="card-meta-silver" style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">
+                            <i class="fas fa-phone-alt" style="color: #D4AF37;"></i> {{ result.phone }}
+                        </div>
+                        <div class="card-meta-silver" style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">
+                             <i class="far fa-calendar-alt"></i> {{ result.date }}
+                        </div>
+                    </div>
+                </a>
+
+                {# Badge removed as per user request #}
+            </div>
+        {% empty %}
+            <div style="text-align:center; padding:80px; color:#F3F4F6; width:100%; grid-column: 1 / -1; opacity: 0.6;">
+                لا توجد طلبات تسويق حالياً.
+            </div>
+        {% endfor %}
+    </div>
+
+    {# ── PAGINATION ── #}
+    {% block pagination %}{% pagination cl %}{% endblock %}
+
+    {# ── FAB ── #}
+    <div class="fab-container fab-hide-on-mobile" aria-hidden="true">
+        <a href="{% url 'admin:listings_propertyoffer_add' %}" class="fab-btn" title="أضف طلب جديد">
+            <i class="fas fa-plus"></i>
+        </a>
+    </div>
+
+    </form>
+</div>
+
+<script>
+    // 1. REFINED DROPDOWN LOGIC (click to toggle, click outside to close)
+    function jh_toggleDropdown(element, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        const parent = element.closest('.command-dropdown');
+        const menu = parent.querySelector('.frosted-dropdown-menu');
+        const isActive = menu.classList.contains('active');
+
+        console.log('Toggling dropdown:', parent, 'Current active:', isActive);
+
+        // Close ALL other dropowns
+        document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+
+        // Toggle current one
+        if (!isActive) {
+            menu.classList.add('active');
+        }
+    }
+
+    // Close dropdowns if clicking anywhere else
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.command-dropdown')) {
+            document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") {
+            document.querySelectorAll('.frosted-dropdown-menu').forEach(m => m.classList.remove('active'));
+        }
+    });
+
+    function applyAction(actionName) {
+        const selected = document.querySelectorAll('.action-select:checked');
+        if (selected.length === 0) {
+            alert('يرجى اختيار طلب واحد على الأقل.');
+            return;
+        }
+        
+        const form = document.getElementById('changelist-form');
+        const actionInput = form.querySelector('select[name="action"]');
+        
+        console.log('Applying action:', actionName, 'on', selected.length, 'items');
+
+        if (actionInput) {
+            if (actionName === 'generate_ai_summary' && selected.length > 1) {
+                alert('الذكاء الاصطناعي يحلل طلباً واحداً في المرة الواحدة.');
+                return;
+            }
+            actionInput.value = actionName;
+            form.submit();
+        } else {
+            console.error('Action input not found in form!');
+        }
+    }
+
+    function applyQuickAction(id, actionName) {
+        // 1. Uncheck all
+        document.querySelectorAll('.action-select').forEach(cb => cb.checked = false);
+        // 2. Check the target one
+        const targetCB = document.querySelector(`.action-select[value="${id}"]`);
+        if (targetCB) targetCB.checked = true;
+        // 3. Submit
+        applyAction(actionName);
+    }
+
+    function assignToMarketer(marketerId) {
+        const selected = document.querySelectorAll('.action-select:checked');
+        if (selected.length === 0) {
+            alert('يرجى اختيار طلب واحد على الأقل للإسناد.');
+            return;
+        }
+
+        const form = document.getElementById('changelist-form');
+        const actionInput = form.querySelector('select[name="action"]');
+        if (actionInput) {
+            // Add marketer_id as a hidden field
+            let mInput = form.querySelector('input[name="marketer_id"]');
+            if (!mInput) {
+                mInput = document.createElement('input');
+                mInput.type = 'hidden';
+                mInput.name = 'marketer_id';
+                form.appendChild(mInput);
+            }
+            mInput.value = marketerId;
+            actionInput.value = 'assign_to_marketer';
+            form.submit();
+        }
+    }
+
+    // Unified Selection Logic (Refined)
+    function updateSelectionUI() {
+        const checked = document.querySelectorAll('.action-select:checked');
+        const selectionBar = document.getElementById('selection-bar');
+        const countSpan = document.getElementById('select-count');
+        const bar = document.querySelector('.unified-command-bar');
+        
+        if (checked.length > 0) {
+            selectionBar.style.display = 'flex';
+            countSpan.textContent = checked.length;
+            bar.style.borderColor = 'var(--gold-premium)';
+        } else {
+            selectionBar.style.display = 'none';
+            bar.style.borderColor = 'var(--frosted-border)';
+        }
+    }
+
+    // Select All logic
+    document.getElementById('action-toggle').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.action-select');
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+            const card = cb.closest('.property-card-wrapper').querySelector('.luxury-card');
+            if (this.checked) card.classList.add('selected');
+            else card.classList.remove('selected');
+        });
+        updateSelectionUI();
+    });
+
+    document.querySelectorAll('.action-select').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const card = this.closest('.property-card-wrapper').querySelector('.luxury-card');
+            if (this.checked) card.classList.add('selected');
+            else card.classList.remove('selected');
+            
+            // Sync with select all
+            const allChecked = document.querySelectorAll('.action-select:checked').length === document.querySelectorAll('.action-select').length;
+            document.getElementById('action-toggle').checked = allChecked;
+            updateSelectionUI();
+        });
+    });
+
+    // Auto-close dropdowns on ESC
+
+    // Handle single card click to select? 
+    // No, better keep a defined checkbox for clarity on cards too.
+</script>
+{% endblock %}

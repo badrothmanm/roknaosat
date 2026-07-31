@@ -1,0 +1,378 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block extrahead %}
+{{ block.super }}
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+{% if is_impersonating and impersonate_stop_url %}
+<meta name="impersonation-banner" content="1"
+    data-acting-as="{{ request.user.get_full_name|default:request.user.username }}"
+    data-acting-username="{{ request.user.username }}"
+    data-manager="{{ impersonator.get_full_name|default:impersonator.username }}"
+    data-stop-url="{{ impersonate_stop_url }}">
+{% endif %}
+{% endblock %}
+
+{% block branding %}
+<a class="navbar-brand" href="/admin/" style="
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    padding: 6px 12px;
+    height: 56px;
+    flex-shrink: 0;
+">
+    {# Logo icon #}
+    <div style="
+        width:36px; height:36px;
+        background: linear-gradient(135deg, #c5a059, #a8853f);
+        border-radius: 9px;
+        display:flex; align-items:center; justify-content:center;
+        flex-shrink:0;
+        box-shadow: 0 4px 12px rgba(197,160,89,0.35);
+    ">
+        <i class="fas fa-building" style="color:#07101c; font-size:1rem;"></i>
+    </div>
+    {# Brand text #}
+    <div style="line-height:1.2; flex-shrink: 0;">
+        <div style="
+            color:#d4af37 !important;
+            font-weight:800;
+            font-size:0.95rem;
+            letter-spacing:0.3px;
+            white-space:nowrap;
+        ">{{ company_name }}</div>
+        <div style="
+            color:#94a3b8;
+            font-size:0.7rem;
+            font-weight:500;
+        ">لوحة التحكم</div>
+    </div>
+</a>
+{% endblock %}
+
+{% block nav_global %}
+{# Desktop: single unified search bar #}
+<div class="smart-search-wrapper d-none d-md-flex" style="margin: 0 12px; flex:1; max-width: 380px;">
+    <i class="fas fa-search smart-search-icon"></i>
+    <input type="text" class="smart-search-input"
+        placeholder="ابحث في العقارات والطلبات..."
+        id="global-smart-search">
+</div>
+{# Mobile: icon that opens overlay #}
+<button class="btn btn-sm d-md-none" id="mobile-search-btn"
+    style="background:rgba(197,160,89,0.1);border:1px solid rgba(197,160,89,0.3);color:#c5a059;border-radius:8px;padding:6px 10px;margin:0 8px;">
+    <i class="fas fa-search"></i>
+</button>
+{# Mobile search overlay #}
+<div id="mobile-search-overlay" style="
+    display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(7,16,28,0.97);
+    align-items:flex-start;justify-content:center;
+    padding-top:80px;
+">
+    <div style="width:90%;max-width:500px;">
+        <div style="display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(197,160,89,0.3);border-radius:10px;padding:0 14px;">
+            <i class="fas fa-search" style="color:#c5a059;margin-left:10px;font-size:0.9rem;"></i>
+            <input type="text" id="mobile-smart-search"
+                placeholder="ابحث في العقارات والطلبات..."
+                style="flex:1;background:transparent;border:none;outline:none;color:#fff;font-family:'Cairo',sans-serif;font-size:1rem;height:52px;direction:rtl;">
+            <button onclick="closeMobileSearch()"
+                style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.2rem;cursor:pointer;padding:0 4px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <p style="color:rgba(255,255,255,0.25);font-size:0.78rem;text-align:center;margin-top:12px;">اضغط ESC للإغلاق</p>
+    </div>
+</div>
+<script>
+function openMobileSearch() {
+    const o = document.getElementById('mobile-search-overlay');
+    o.style.display = 'flex';
+    setTimeout(() => document.getElementById('mobile-smart-search').focus(), 100);
+}
+function closeMobileSearch() {
+    document.getElementById('mobile-search-overlay').style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('mobile-search-btn');
+    if (btn) btn.addEventListener('click', openMobileSearch);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileSearch(); });
+});
+</script>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Kill Bootstrap bg-body-* grays inside Jazzmin (extra safety) */
+    body.bg-body-tertiary,
+    .bg-body-tertiary,
+    .bg-body-secondary {
+        background-color: #07101c !important;
+        background-image: none !important;
+    }
+    #jazzy-sidebar,
+    #jazzy-sidebar .sidebar-wrapper,
+    #jazzy-sidebar .sidebar-menu {
+        background-color: #07101c !important;
+        background-image: none !important;
+    }
+    /* Let admin_custom.css handle root layout to avoid conflicts */
+    .saas-dashboard {
+        background-color: #07101c !important;
+        background: #07101c !important;
+        position: relative;
+    }
+
+    .content-header,
+    .main-footer {
+        background-color: #07101c !important;
+        background: #07101c !important;
+    }
+
+    /* ── Navbar: single row, no wrap ── */
+    .main-header.navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        padding: 0 8px;
+        min-height: 56px;
+    }
+
+    /* Smart search: clean, single bar */
+    .smart-search-wrapper {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(197,160,89,0.2);
+        border-radius: 8px;
+        padding: 0 12px;
+        height: 38px;
+        flex: 1;
+        max-width: 400px;
+        transition: border-color 0.25s;
+    }
+
+    .smart-search-wrapper:focus-within {
+        border-color: rgba(197,160,89,0.5);
+        background: rgba(197,160,89,0.04);
+    }
+
+    .smart-search-icon {
+        color: rgba(197,160,89,0.5);
+        font-size: 0.8rem;
+        margin-left: 8px;
+        flex-shrink: 0;
+    }
+
+    .smart-search-input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.85rem;
+        width: 100%;
+        direction: rtl;
+    }
+
+    .smart-search-input::placeholder {
+        color: rgba(255,255,255,0.25);
+        font-size: 0.8rem;
+    }
+
+    /* Hide Jazzmin's own top search if it somehow renders */
+    .navbar-search, .navbar-form, form[action*="search"] {
+        display: none !important;
+    }
+
+    /* Sidebar brand: وضوح الشعار واسم الشركة */
+    .main-sidebar .brand-link {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        padding: 20px 18px !important;
+        background: #07101c !important;
+        border-bottom: 1px solid rgba(197, 160, 89, 0.25) !important;
+        text-decoration: none !important;
+    }
+    .main-sidebar .brand-link img,
+    .main-sidebar .brand-link .brand-image-xl {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        object-fit: contain !important;
+        flex-shrink: 0 !important;
+    }
+    .main-sidebar .brand-text {
+        color: #d4af37 !important;
+        font-weight: 800 !important;
+        font-size: 1.15rem !important;
+        line-height: 1.35 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+    }
+    .main-sidebar .brand-link small,
+    .main-sidebar .brand-link .brand-text-secondary {
+        display: block !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        margin-top: 2px !important;
+    }
+
+    /* ── KPI Grid — Responsive ── */
+    .kpi-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+        margin-bottom: 24px !important;
+    }
+
+    @media (min-width: 576px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .kpi-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+        }
+    }
+
+    @media (min-width: 1100px) {
+        .kpi-grid {
+            grid-template-columns: repeat(5, 1fr) !important;
+        }
+    }
+
+    /* KPI card baseline */
+    .kpi-card {
+        min-height: 110px !important;
+    }
+
+    /* Fix navbar layout */
+    .navbar-nav {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    /* DESKTOP: Sidebar visible by default (do not hide when body has no sidebar-collapse) */
+    @media (min-width: 992px) {
+        body:not(.sidebar-collapse) .main-sidebar,
+        body:not(.sidebar-collapse) .app-sidebar {
+            transform: none !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        body.sidebar-mini.sidebar-collapse .content-wrapper,
+        body.sidebar-mini.sidebar-collapse .main-footer,
+        body.sidebar-mini.sidebar-collapse .main-header {
+            margin-right: 4.6rem !important;
+            margin-left: 0 !important;
+        }
+        body.sidebar-mini.sidebar-collapse .main-sidebar:hover {
+            transform: translateX(0) !important;
+            width: 250px !important;
+        }
+    }
+
+    /* إخفاء الشريط عند .sidebar-collapse (ديسكتوب فقط؛ على الموبايل يُلغى عند .sidebar-open) */
+    @media (min-width: 992px) {
+        body.sidebar-collapse .main-sidebar,
+        body.sidebar-collapse .app-sidebar {
+            transform: translateX(100%) !important;
+            margin-left: 0 !important;
+        }
+    }
+    /* موبايل: عند فتح الشريط (.sidebar-open) إظهاره حتى مع وجود .sidebar-collapse */
+    @media (max-width: 991.98px) {
+        body.sidebar-open .main-sidebar,
+        body.sidebar-open .app-sidebar {
+            transform: translateX(0) !important;
+        }
+    }
+
+    /* Time filter responsive */
+    .time-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .filter-btn {
+        flex: 0 0 auto;
+        font-size: 0.78rem;
+        padding: 5px 12px;
+    }
+
+    /*
+     * عناوين القائمة الجانبية:
+     * - AdminLTE 3 + Jazzmin قديم: .main-sidebar .nav-sidebar …
+     * - AdminLTE 4 + Jazzmin الحديث: aside#jazzy-sidebar.app-sidebar + ul.sidebar-menu (لا يوجد .main-sidebar)
+     * AdminLTE يفرض غالباً nowrap + ellipsis على p داخل .nav-link.
+     */
+    html body .main-sidebar .nav-sidebar .nav-link,
+    html body .main-sidebar .nav-treeview .nav-link,
+    html body #jazzy-sidebar .sidebar-menu .nav-link,
+    html body #jazzy-sidebar .nav-treeview .nav-link,
+    html body .app-sidebar .sidebar-menu .nav-link {
+        align-items: flex-start !important;
+        white-space: normal !important;
+        overflow: visible !important;
+    }
+    html body .main-sidebar .nav-sidebar .nav-link p,
+    html body .main-sidebar .nav-treeview .nav-link p,
+    html body .main-sidebar .nav-sidebar .nav-link span:not(.nav-icon):not(.badge),
+    html body .main-sidebar .nav-treeview .nav-link span:not(.nav-icon):not(.badge),
+    html body #jazzy-sidebar .nav-link p,
+    html body #jazzy-sidebar .sidebar-menu .nav-link p,
+    html body .app-sidebar .nav-link p,
+    html body #jazzy-sidebar .nav-link span:not(.nav-icon):not(.badge):not(.nav-arrow),
+    html body .app-sidebar .nav-link span:not(.nav-icon):not(.badge):not(.nav-arrow) {
+        display: block !important;
+        flex: 1 1 auto !important;
+        min-width: min(100%, 28rem) !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        word-break: break-word !important;
+        line-height: 1.45 !important;
+        max-width: none !important;
+        -webkit-line-clamp: unset !important;
+        line-clamp: unset !important;
+    }
+    html body #jazzy-sidebar .nav-header,
+    html body .app-sidebar .nav-header {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        word-break: break-word !important;
+        line-height: 1.4 !important;
+        max-width: none !important;
+    }
+    /* تمرير داخلي للقائمة على سطح المكتب فقط — على الجوال يتسبب بتمرير متداخل وبطء على iOS */
+    @media (min-width: 992px) {
+        html body .main-sidebar .nav-sidebar,
+        html body .main-sidebar .sidebar,
+        html body #jazzy-sidebar .sidebar-wrapper,
+        html body #jazzy-sidebar .sidebar-menu {
+            overflow-x: visible !important;
+            overflow-y: auto !important;
+        }
+        html body:not(.sidebar-collapse) #jazzy-sidebar.app-sidebar,
+        html body:not(.sidebar-collapse) aside.app-sidebar {
+            width: min(100vw - 12px, 272px) !important;
+            min-width: 240px !important;
+            max-width: min(100vw - 12px, 272px) !important;
+        }
+    }
+</style>
+{% endblock %}
