@@ -877,7 +877,14 @@ class GeneralContact(models.Model):
 # =====================================================
 
 class SiteAdBanner(models.Model):
-    """بنر يظهر بعد عدد معيّن من كروت العروض — سجل واحد للإعدادات."""
+    """إعداد بنرات قائمة العروض — سجل واحد: كل N عروض، بحد أقصى ظهورين، لكل بنر تصميمه."""
+
+    THEME_SERVICES = "services"
+    THEME_REQUEST = "request"
+    THEME_CHOICES = [
+        (THEME_SERVICES, "تصميم الخدمات (شعار + تأجير/بيع/إدارة/تطوير)"),
+        (THEME_REQUEST, "تصميم اطلب عقارك (دعوة للتواصل)"),
+    ]
 
     class Meta:
         verbose_name = "البنر الإعلاني"
@@ -886,42 +893,121 @@ class SiteAdBanner(models.Model):
     is_enabled = models.BooleanField(
         "إظهار البنر",
         default=True,
-        help_text="فعّل لإظهار البنر داخل قائمة العروض العقارية.",
+        help_text="فعّل لإظهار البنرات داخل قائمة العروض العقارية.",
     )
-    image = models.ImageField(
-        "تصميم البنر",
+    insert_every = models.PositiveSmallIntegerField(
+        "يظهر كل كم عرض",
+        default=4,
+        help_text="مثال: 4 يعني بعد العرض 4 ثم بعد العرض 8.",
+    )
+    max_banners = models.PositiveSmallIntegerField(
+        "عدد مرات الظهور",
+        default=2,
+        help_text="الحد الأقصى لظهور البنر (افتراضياً مرتان).",
+    )
+
+    # —— البنر الأول ——
+    theme_1 = models.CharField(
+        "تصميم البنر الأول",
+        max_length=20,
+        choices=THEME_CHOICES,
+        default=THEME_SERVICES,
+        help_text="يُستخدم إن لم تُرفع صورة مخصصة للبنر الأول.",
+    )
+    image_1 = models.ImageField(
+        "صورة البنر الأول",
         upload_to="ad_banners/",
         null=True,
         blank=True,
-        help_text="ارفع تصميماً مناسباً للجوال والتابلت (مستحسن 1080×540 أو نسبة 2:1).",
+        help_text="اختياري — إن رُفعت تستبدل التصميم الجاهز. مستحسن 1080×540.",
     )
-    link_url = models.URLField(
-        "رابط عند الضغط",
+    title_1 = models.CharField(
+        "عنوان البنر الأول",
+        max_length=120,
+        blank=True,
+        default="الركن الأوسط",
+    )
+    slogan_1 = models.CharField(
+        "شعار البنر الأول",
+        max_length=200,
+        blank=True,
+        default="في كل زاوية، فرصة استثمارية.",
+    )
+    link_url_1 = models.CharField(
+        "رابط البنر الأول",
+        max_length=500,
         blank=True,
         default="",
-        help_text="اختياري — يفتح عند الضغط على البنر.",
+        help_text="اختياري — رابط كامل أو مسار مثل /contact/",
     )
-    alt_text = models.CharField(
-        "النص البديل",
+    alt_text_1 = models.CharField(
+        "النص البديل — البنر الأول",
         max_length=200,
         blank=True,
         default="الركن الأوسط للعقارات — تأجير · بيع · إدارة أملاك · تطوير عقاري",
     )
-    insert_after = models.PositiveSmallIntegerField(
-        "يظهر بعد كم عرض",
-        default=3,
-        help_text="مثال: 3 يعني بعد ثالث عقار في القائمة.",
+
+    # —— البنر الثاني ——
+    theme_2 = models.CharField(
+        "تصميم البنر الثاني",
+        max_length=20,
+        choices=THEME_CHOICES,
+        default=THEME_REQUEST,
+        help_text="يُستخدم إن لم تُرفع صورة مخصصة للبنر الثاني.",
     )
+    image_2 = models.ImageField(
+        "صورة البنر الثاني",
+        upload_to="ad_banners/",
+        null=True,
+        blank=True,
+        help_text="اختياري — إن رُفعت تستبدل التصميم الجاهز.",
+    )
+    title_2 = models.CharField(
+        "عنوان البنر الثاني",
+        max_length=120,
+        blank=True,
+        default="ما لقيت طلبك؟",
+    )
+    slogan_2 = models.CharField(
+        "شعار البنر الثاني",
+        max_length=200,
+        blank=True,
+        default="أرسل مواصفاتك ونبحث لك عن العقار الأنسب.",
+    )
+    cta_2 = models.CharField(
+        "نص زر البنر الثاني",
+        max_length=80,
+        blank=True,
+        default="اطلب عقاراً الآن",
+    )
+    link_url_2 = models.CharField(
+        "رابط البنر الثاني",
+        max_length=500,
+        blank=True,
+        default="/request-property/",
+        help_text="افتراضياً صفحة طلب عقار. يمكن وضع رابط خارجي أو مسار داخلي.",
+    )
+    alt_text_2 = models.CharField(
+        "النص البديل — البنر الثاني",
+        max_length=200,
+        blank=True,
+        default="اطلب عقاراً بمواصفاتك — الركن الأوسط للعقارات",
+    )
+
     updated_at = models.DateTimeField("آخر تحديث", auto_now=True)
 
     def __str__(self):
         state = "مفعّل" if self.is_enabled else "مخفي"
-        return f"البنر الإعلاني ({state})"
+        return f"البنر الإعلاني ({state}) — كل {self.insert_every} عروض × {self.max_banners}"
 
     def save(self, *args, **kwargs):
         self.pk = 1
-        if self.insert_after < 1:
-            self.insert_after = 1
+        if self.insert_every < 1:
+            self.insert_every = 1
+        if self.max_banners < 1:
+            self.max_banners = 1
+        if self.max_banners > 2:
+            self.max_banners = 2
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -932,15 +1018,42 @@ class SiteAdBanner(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
-    @property
-    def has_custom_image(self):
-        return bool(self.image)
-
-    @property
-    def image_url(self):
-        if self.image:
+    def _image_url(self, field):
+        img = getattr(self, field, None)
+        if img:
             try:
-                return self.image.url
+                return img.url
             except Exception:
                 pass
         return ""
+
+    def as_frontend_config(self):
+        """إعدادات جاهزة للفرونت (JSON)."""
+        return {
+            "enabled": bool(self.is_enabled),
+            "insertEvery": int(self.insert_every or 4),
+            "maxBanners": int(self.max_banners or 2),
+            "logoUrl": "/static/img/logo-banner.png?v=2",
+            "banners": [
+                {
+                    "slot": 1,
+                    "theme": self.theme_1 or self.THEME_SERVICES,
+                    "imageUrl": self._image_url("image_1"),
+                    "title": self.title_1 or "الركن الأوسط",
+                    "slogan": self.slogan_1 or "",
+                    "cta": "",
+                    "linkUrl": (self.link_url_1 or "").strip(),
+                    "alt": self.alt_text_1 or "الركن الأوسط للعقارات",
+                },
+                {
+                    "slot": 2,
+                    "theme": self.theme_2 or self.THEME_REQUEST,
+                    "imageUrl": self._image_url("image_2"),
+                    "title": self.title_2 or "ما لقيت طلبك؟",
+                    "slogan": self.slogan_2 or "",
+                    "cta": self.cta_2 or "اطلب عقاراً الآن",
+                    "linkUrl": (self.link_url_2 or "/request-property/").strip(),
+                    "alt": self.alt_text_2 or "اطلب عقاراً بمواصفاتك",
+                },
+            ],
+        }

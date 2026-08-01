@@ -1,4 +1,5 @@
 import os
+import json
 import datetime
 from django.conf import settings
 from django.urls import reverse
@@ -15,13 +16,19 @@ def global_vars(request):
 
     site_ticker = None
     site_ad_banner = None
+    site_ad_banner_json = "{}"
     try:
         from listings.models import SiteTicker, SiteAdBanner
         site_ticker = SiteTicker.load()
         site_ad_banner = SiteAdBanner.load()
+        site_ad_banner_json = json.dumps(
+            site_ad_banner.as_frontend_config(),
+            ensure_ascii=False,
+        )
     except Exception:
         site_ticker = None
         site_ad_banner = None
+        site_ad_banner_json = "{}"
 
     try:
         from listings.riyadh_districts import (
@@ -64,6 +71,7 @@ def global_vars(request):
         "impersonate_stop_url": impersonate_stop_url,
         "site_ticker": site_ticker,
         "site_ad_banner": site_ad_banner,
+        "site_ad_banner_json": site_ad_banner_json,
         "riyadh_districts": RIYADH_DISTRICTS,
         "budget_ranges_buy": BUDGET_RANGES_BUY,
         "budget_ranges_rent": BUDGET_RANGES_RENT,

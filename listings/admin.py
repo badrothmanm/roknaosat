@@ -2446,15 +2446,23 @@ class GeneralContactAdmin(admin.ModelAdmin):
 
 @admin.register(SiteAdBanner)
 class SiteAdBannerAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "is_enabled", "insert_after", "link_url", "updated_at")
+    list_display = ("__str__", "is_enabled", "insert_every", "max_banners", "updated_at")
     fieldsets = (
         ("الظهور", {
-            "fields": ("is_enabled", "insert_after", "alt_text", "link_url"),
-            "description": "البنر يظهر داخل قائمة العروض بعد العدد المحدد من الكروت (افتراضياً بعد 3).",
+            "fields": ("is_enabled", "insert_every", "max_banners"),
+            "description": "افتراضياً: يظهر بنر بعد كل 4 عروض، وبحد أقصى مرتين (بعد العرض 4 ثم 8). لكل ظهور تصميم مستقل أدناه.",
         }),
-        ("التصميم", {
-            "fields": ("image",),
-            "description": "اختياري. إن لم ترفع صورة يظهر تصميم متجاوب احترافي (كمبيوتر + جوال) بهوية الركن الأوسط وخدماتها. ارفع صورة فقط إذا أردت استبدال التصميم الافتراضي.",
+        ("البنر الأول (بعد 4 عروض)", {
+            "fields": (
+                "theme_1", "image_1", "title_1", "slogan_1", "link_url_1", "alt_text_1",
+            ),
+            "description": "إن رفعت صورة تُستخدم بدل التصميم الجاهز. التصميم الافتراضي: الخدمات.",
+        }),
+        ("البنر الثاني (بعد 8 عروض)", {
+            "fields": (
+                "theme_2", "image_2", "title_2", "slogan_2", "cta_2", "link_url_2", "alt_text_2",
+            ),
+            "description": "تصميم مختلف عن الأول. الافتراضي: اطلب عقارك مع رابط /request-property/",
         }),
         ("معلومات", {
             "fields": ("updated_at",),

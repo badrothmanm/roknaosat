@@ -59,6 +59,10 @@
                     <span class="ptype-icon" aria-hidden="true"><i class="fas fa-umbrella-beach"></i></span>
                     <span class="ptype-label">استراحات</span>
                 </button>
+                <button type="button" class="ptype-btn ptype-btn--all" data-property-type="all">
+                    <span class="ptype-icon" aria-hidden="true"><i class="fas fa-border-all"></i></span>
+                    <span class="ptype-label">كل العروض</span>
+                </button>
             </nav>
         </div>
     </div>
@@ -71,31 +75,49 @@
             <div class="title-line"></div>
         </div>
 
-        <div class="filter-bar">
-            <select id="filter-offer-type" class="filter-select">
-                <option value="all">نوع العرض</option>
-                <option value="sale">بيع</option>
-                <option value="rent">إيجار</option>
-                <option value="investment">إستثمار</option>
-            </select>
-            <input type="text" id="filter-district-text" placeholder="ابحث باسم الحي..." class="filter-input">
-            <select id="filter-type" class="filter-select">
-                <option value="all">نوع العقار</option>
-                <option value="فيلا">فيلا</option>
-                <option value="قصر">قصر</option>
-                <option value="شقة">شقة</option>
-                <option value="أرض">أرض</option>
-                <option value="عمارة">عمارة</option>
-                <option value="مزرعة">مزرعة</option>
-                <option value="استراحة">استراحة</option>
-            </select>
-            <div class="price-group">
-                <input type="number" id="filter-min-price" placeholder="أقل سعر" class="filter-input">
-                <input type="number" id="filter-max-price" placeholder="أعلى سعر" class="filter-input">
+        <div class="filter-bar" id="offersFilterBar">
+            <div class="filter-bar-quick">
+                <input type="text" id="filter-district-text" placeholder="ابحث باسم الحي..." class="filter-input filter-input--quick" autocomplete="off">
+                <button type="button" id="btn-search" class="btn-search btn-search--quick" aria-label="بحث">
+                    <i class="fas fa-search"></i>
+                    <span class="btn-search-label">بحث</span>
+                </button>
             </div>
-            <button id="btn-search" class="btn-search">
-                <i class="fas fa-search"></i> بحث
+
+            <button type="button" class="filter-bar-toggle" id="filterBarToggle" aria-expanded="false" aria-controls="filterBarFields">
+                <span class="filter-bar-toggle-label">
+                    <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                    تصفية متقدمة
+                    <span class="filter-active-count" id="filterActiveCount" hidden>0</span>
+                </span>
+                <i class="fas fa-chevron-down filter-bar-toggle-chevron" aria-hidden="true"></i>
             </button>
+
+            <div class="filter-bar-fields" id="filterBarFields">
+                <select id="filter-offer-type" class="filter-select">
+                    <option value="all">نوع العرض</option>
+                    <option value="sale">بيع</option>
+                    <option value="rent">إيجار</option>
+                    <option value="investment">إستثمار</option>
+                </select>
+                <select id="filter-type" class="filter-select">
+                    <option value="all">نوع العقار</option>
+                    <option value="فيلا">فيلا</option>
+                    <option value="قصر">قصر</option>
+                    <option value="شقة">شقة</option>
+                    <option value="أرض">أرض</option>
+                    <option value="عمارة">عمارة</option>
+                    <option value="مزرعة">مزرعة</option>
+                    <option value="استراحة">استراحة</option>
+                </select>
+                <div class="price-group">
+                    <input type="number" id="filter-min-price" placeholder="أقل سعر" class="filter-input" inputmode="numeric">
+                    <input type="number" id="filter-max-price" placeholder="أعلى سعر" class="filter-input" inputmode="numeric">
+                </div>
+                <button type="button" id="btn-search-advanced" class="btn-search btn-search--advanced">
+                    <i class="fas fa-search"></i> تطبيق التصفية
+                </button>
+            </div>
         </div>
 
         <div id="propertiesList" class="grid-listing property-cards-container">
@@ -168,23 +190,18 @@
 
 <script>
 (function () {
-    function filterByPropertyType(type) {
-        const typeSelect = document.getElementById("filter-type");
-        const searchBtn = document.getElementById("btn-search");
-        if (typeSelect) typeSelect.value = type || "all";
-        document.querySelectorAll(".ptype-btn").forEach((btn) => {
-            btn.classList.toggle("is-active", btn.getAttribute("data-property-type") === type);
-        });
-        if (searchBtn) searchBtn.click();
-        else {
-            const offers = document.getElementById("offers");
-            if (offers) offers.scrollIntoView({ behavior: "smooth" });
-        }
-    }
-
     document.querySelectorAll(".ptype-btn").forEach((el) => {
         el.addEventListener("click", function () {
-            filterByPropertyType(this.getAttribute("data-property-type") || "all");
+            const type = this.getAttribute("data-property-type") || "all";
+            if (typeof window.filterOffersByPropertyType === "function") {
+                window.filterOffersByPropertyType(type);
+                return;
+            }
+            // احتياط إذا تأخر تحميل main.js
+            const typeSelect = document.getElementById("filter-type");
+            if (typeSelect) typeSelect.value = type;
+            const searchBtn = document.getElementById("btn-search");
+            if (searchBtn) searchBtn.click();
         });
     });
 
@@ -192,8 +209,6 @@
     if (!nav) return;
 
     const reveal = () => nav.classList.add("is-inview");
-
-    // إظهار فوري إذا كانت الأقسام ظاهرة مسبقاً (شائع على سطح المكتب)
     const rect = nav.getBoundingClientRect();
     const visibleNow = rect.top < window.innerHeight * 0.9 && rect.bottom > 0;
     if (visibleNow) {
@@ -211,8 +226,6 @@
     } else {
         reveal();
     }
-
-    // احتياط: لا تبقَ الأقسام مخفية إذا تأخر الـ observer
     setTimeout(reveal, 1200);
 })();
 </script>

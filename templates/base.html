@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.4.2">
     <link rel="stylesheet" href="{% static 'css/nav_mobile.css' %}?v=2.5.1">
-    <link rel="stylesheet" href="{% static 'css/brand-rokna.css' %}?v=2.15.0">
+    <link rel="stylesheet" href="{% static 'css/brand-rokna.css' %}?v=2.20.0">
 
     <script type="application/ld+json">
     {
@@ -92,16 +92,7 @@
 </head>
 
 <body id="top" class="{% if site_ticker and site_ticker.is_enabled and site_ticker.message %}has-site-ticker{% endif %}" style="--ticker-h: {% if site_ticker and site_ticker.is_enabled and site_ticker.message %}40px{% else %}0px{% endif %};">
-    {% if site_ad_banner %}
-    <div id="site-ad-banner-config" hidden
-         data-enabled="{% if site_ad_banner.is_enabled %}1{% else %}0{% endif %}"
-         data-insert-after="{{ site_ad_banner.insert_after|default:3 }}"
-         data-custom-image="{% if site_ad_banner.has_custom_image %}1{% else %}0{% endif %}"
-         data-image-url="{{ site_ad_banner.image_url }}"
-         data-logo-url="{% static 'img/logo-banner.png' %}?v=2"
-         data-alt="{{ site_ad_banner.alt_text|default:'الركن الأوسط للعقارات'|escape }}"
-         data-link-url="{{ site_ad_banner.link_url|default:'' }}"></div>
-    {% endif %}
+    <script id="site-ad-banner-config" type="application/json">{{ site_ad_banner_json|default:'{}'|safe }}</script>
 
     {% include 'partials/header.html' %}
     {% include 'partials/ticker.html' %}
@@ -256,7 +247,7 @@
         window.CRM_KEY = "{{ crm_key }}";
     </script>
 
-    <script src="{% static 'js/main.js' %}?v=16"></script>
+    <script src="{% static 'js/main.js' %}?v=21"></script>
     <script src="{% static 'js/behavioral_tracker.js' %}?v=4"></script>
 
     <style>

@@ -596,12 +596,38 @@
             const adCfg = getAdBannerConfig();
 
             if (!data || data.length === 0) {
-                container.innerHTML =
-                    '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #64748b;"><i class="fas fa-search-minus fa-2x" style="color: #1B4F9C; margin-bottom: 20px;"></i><p style="font-size: 1.2rem;">نعتذر، لا توجد نتائج تطابق بحثك.</p></div>';
+                container.innerHTML = buildOffersEmptyState();
+                bindOffersEmptyActions(container);
+                updateOffersSectionTitle();
                 return;
             }
 
             const isMobileStack = window.matchMedia("(max-width: 768px)").matches;
+            const bannerPositions = getAdBannerPositions(adCfg);
+            const useBannerSplit = bannerPositions.length > 0;
+
+            // مجموعات sticky منفصلة حول كل بنر حتى لا يُغطى البنر
+            let currentGroup = null;
+            let groupSeq = 0;
+
+            function ensureStackGroup() {
+                if (!useBannerSplit) return null;
+                if (!currentGroup) {
+                    currentGroup = document.createElement("div");
+                    currentGroup.className = "property-stack-group";
+                    currentGroup.setAttribute("data-stack-group", String(groupSeq++));
+                    container.appendChild(currentGroup);
+                }
+                return currentGroup;
+            }
+
+            function insertBannerAt(slotIndex, afterCount) {
+                const wrap = buildListingsAdBanner(adCfg, slotIndex, afterCount);
+                if (wrap) {
+                    container.appendChild(wrap);
+                    currentGroup = null;
+                }
+            }
 
             data.forEach((prop, index) => {
                 const card = document.createElement("div");
@@ -670,12 +696,18 @@
                     </div>
                 `;
 
-                container.appendChild(card);
+                if (!useBannerSplit) {
+                    container.appendChild(card);
+                } else {
+                    ensureStackGroup().appendChild(card);
+                }
+
                 if (!isMobileStack) revealObserver.observe(card);
 
-                // بنر إعلاني بعد عدد معيّن من العروض (لا يُحسب ضمن pagination)
-                if (adCfg.enabled && index + 1 === adCfg.insertAfter) {
-                    container.appendChild(buildListingsAdBanner(adCfg));
+                const afterCount = index + 1;
+                const slotIndex = bannerPositions.indexOf(afterCount);
+                if (slotIndex >= 0) {
+                    insertBannerAt(slotIndex, afterCount);
                 }
             });
 
@@ -683,37 +715,112 @@
             pager.applyPagination();
             syncListingsAdBannerVisibility();
             syncOffersCardStack();
+            updateOffersSectionTitle();
         }
 
-        /** يضبط z-index ودرجة sticky لكل كرت ظاهر (يتجاوز مشكلة البنر مع nth-child) */
+        const PROPERTY_TYPE_LABELS = {
+            شقة: "شقق",
+            عمارة: "عمائر",
+            فيلا: "فلل",
+            قصر: "قصور",
+            أرض: "أراضي",
+            مزرعة: "مزارع",
+            استراحة: "استراحات",
+            دور: "أدوار",
+            "محل تجاري": "محلات تجارية",
+        };
+
+        function getSelectedPropertyType() {
+            return document.getElementById("filter-type")?.value || "all";
+        }
+
+        function getPropertyTypeLabel(type) {
+            if (!type || type === "all") return "";
+            return PROPERTY_TYPE_LABELS[type] || type;
+        }
+
+        function updateOffersSectionTitle() {
+            const title = document.querySelector("#offers .section-title");
+            if (!title) return;
+            const type = getSelectedPropertyType();
+            const label = getPropertyTypeLabel(type);
+            title.textContent = label ? `عروض ${label}` : "عروضنا الحالية";
+        }
+
+        function buildOffersEmptyState() {
+            const type = getSelectedPropertyType();
+            const label = getPropertyTypeLabel(type);
+            const headline = label
+                ? `لا توجد عروض ${label} حالياً`
+                : "لا توجد نتائج مطابقة";
+            const detail = label
+                ? `لم نعثر على عقارات من نوع «${label}» ضمن العروض المنشورة الآن. يمكنك تصفح كل العروض أو إرسال طلب بمواصفاتك وسنساعدك في إيجاد الأنسب.`
+                : "جرّب تعديل كلمات البحث أو الفلاتر، أو أرسل لنا طلب عقار بمواصفاتك.";
+
+            return `
+                <div class="offers-empty" role="status" aria-live="polite">
+                    <div class="offers-empty-glow" aria-hidden="true"></div>
+                    <div class="offers-empty-icon" aria-hidden="true">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="offers-empty-title">${headline}</h3>
+                    <p class="offers-empty-text">${detail}</p>
+                    <div class="offers-empty-actions">
+                        <button type="button" class="offers-empty-btn offers-empty-btn--primary" data-clear-offers-filters>
+                            عرض كل العروض
+                        </button>
+                        <a href="/request-property/" class="offers-empty-btn offers-empty-btn--ghost">
+                            اطلب عقاراً بمواصفاتك
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindOffersEmptyActions(container) {
+            const clearBtn = container.querySelector("[data-clear-offers-filters]");
+            if (!clearBtn) return;
+            clearBtn.addEventListener("click", () => {
+                window.filterOffersByPropertyType("all");
+            });
+        }
+
+        /** يضبط z-index داخل كل مجموعة تكدس على حدة (حتى لا يغطي البنر) */
         function syncOffersCardStack() {
             const list = document.getElementById("propertiesList");
             if (!list) return;
 
             const isMobile = window.matchMedia("(max-width: 768px)").matches;
-            const cards = Array.from(list.querySelectorAll("[data-property-card]")).filter(
-                (c) => c.style.display !== "none"
-            );
+            const groups = Array.from(list.querySelectorAll("[data-stack-group]"));
+            const scopes = groups.length ? groups : [list];
 
-            cards.forEach((card, index) => {
-                if (!isMobile) {
-                    card.classList.remove("property-card-item");
-                    card.style.removeProperty("--stack-step");
-                    card.style.removeProperty("--stack-z");
-                    card.style.removeProperty("z-index");
-                    return;
-                }
+            scopes.forEach((scope) => {
+                const cards = Array.from(scope.querySelectorAll("[data-property-card]")).filter(
+                    (c) => c.style.display !== "none"
+                );
 
-                card.classList.add("property-card-item");
-                card.classList.remove("reveal");
-                const step = Math.min(index, 4) * 10;
-                card.style.setProperty("--stack-step", `${step}px`);
-                card.style.setProperty("--stack-z", String(index + 1));
-                card.style.zIndex = String(index + 1);
+                cards.forEach((card, index) => {
+                    if (!isMobile) {
+                        card.classList.remove("property-card-item");
+                        card.style.removeProperty("--stack-step");
+                        card.style.removeProperty("--stack-z");
+                        card.style.removeProperty("z-index");
+                        return;
+                    }
+
+                    card.classList.add("property-card-item");
+                    card.classList.remove("reveal");
+                    const step = Math.min(index, 4) * 10;
+                    card.style.setProperty("--stack-step", `${step}px`);
+                    card.style.setProperty("--stack-z", String(index + 1));
+                    card.style.zIndex = String(index + 1);
+                });
             });
 
-            const banner = list.querySelector("[data-listings-ad-banner]");
-            if (banner) banner.style.zIndex = "0";
+            list.querySelectorAll("[data-listings-ad-banner]").forEach((banner) => {
+                banner.classList.add("listings-ad-banner--stack-break");
+                banner.style.zIndex = "20";
+            });
         }
         window.syncOffersCardStack = syncOffersCardStack;
 
@@ -727,58 +834,106 @@
 
         function getAdBannerConfig() {
             const el = document.getElementById("site-ad-banner-config");
-            if (!el) {
-                return {
-                    enabled: false,
-                    insertAfter: 3,
-                    customImage: false,
-                    imageUrl: "",
-                    logoUrl: "/static/img/logo-banner.png?v=2",
-                    alt: "الركن الأوسط للعقارات — تأجير · بيع · إدارة أملاك · تطوير عقاري",
-                    linkUrl: "",
-                };
-            }
-            const after = parseInt(el.dataset.insertAfter || "3", 10);
-            return {
-                enabled: el.dataset.enabled === "1",
-                insertAfter: Number.isFinite(after) && after > 0 ? after : 3,
-                customImage: el.dataset.customImage === "1",
-                imageUrl: (el.dataset.imageUrl || "").trim(),
-                logoUrl: el.dataset.logoUrl || "/static/img/logo-banner.png?v=2",
-                alt: el.dataset.alt || "الركن الأوسط للعقارات",
-                linkUrl: (el.dataset.linkUrl || "").trim(),
+            const fallback = {
+                enabled: false,
+                insertEvery: 4,
+                maxBanners: 2,
+                logoUrl: "/static/img/logo-banner.png?v=2",
+                banners: [],
             };
+            if (!el) return fallback;
+            try {
+                const raw = (el.textContent || "").trim();
+                const data = raw ? JSON.parse(raw) : {};
+                const insertEvery = parseInt(data.insertEvery, 10);
+                const maxBanners = parseInt(data.maxBanners, 10);
+                return {
+                    enabled: Boolean(data.enabled),
+                    insertEvery: Number.isFinite(insertEvery) && insertEvery > 0 ? insertEvery : 4,
+                    maxBanners: Number.isFinite(maxBanners) && maxBanners > 0 ? Math.min(maxBanners, 2) : 2,
+                    logoUrl: data.logoUrl || fallback.logoUrl,
+                    banners: Array.isArray(data.banners) ? data.banners : [],
+                };
+            } catch (err) {
+                console.warn("تعذر قراءة إعدادات البنر:", err);
+                return fallback;
+            }
         }
 
-        function buildListingsAdBanner(cfg) {
+        function getAdBannerPositions(cfg) {
+            if (!cfg?.enabled) return [];
+            const every = cfg.insertEvery || 4;
+            const max = cfg.maxBanners || 2;
+            const positions = [];
+            for (let i = 1; i <= max; i += 1) {
+                positions.push(every * i);
+            }
+            return positions;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function buildListingsAdBanner(cfg, slotIndex, afterCount) {
+            const bannerCfg = cfg.banners?.[slotIndex] || {};
+            const theme = bannerCfg.theme || (slotIndex === 0 ? "services" : "request");
+            const alt = bannerCfg.alt || "الركن الأوسط للعقارات";
+            const linkUrl = (bannerCfg.linkUrl || "").trim();
+            const imageUrl = (bannerCfg.imageUrl || "").trim();
+
             const wrap = document.createElement("aside");
-            wrap.className = "listings-ad-banner";
+            wrap.className = "listings-ad-banner listings-ad-banner--stack-break";
             wrap.setAttribute("data-listings-ad-banner", "");
-            wrap.setAttribute("data-insert-after", String(cfg.insertAfter));
-            wrap.setAttribute("aria-label", cfg.alt);
+            wrap.setAttribute("data-banner-slot", String(slotIndex + 1));
+            wrap.setAttribute("data-insert-after", String(afterCount));
+            wrap.setAttribute("aria-label", alt);
 
             let inner;
-            if (cfg.customImage && cfg.imageUrl) {
+            if (imageUrl) {
                 wrap.classList.add("listings-ad-banner--image");
                 const img = document.createElement("img");
-                img.src = cfg.imageUrl;
-                img.alt = cfg.alt;
+                img.src = imageUrl;
+                img.alt = alt;
                 img.loading = "lazy";
                 img.decoding = "async";
                 img.className = "listings-ad-banner-photo";
                 inner = img;
+            } else if (theme === "request") {
+                wrap.classList.add("listings-ad-banner--request");
+                const panel = document.createElement("div");
+                panel.className = "rokna-banner rokna-banner--request";
+                panel.innerHTML = `
+                    <div class="rokna-banner-request-mark" aria-hidden="true">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="rokna-banner-content">
+                        <p class="rokna-banner-kicker">الركن الأوسط للعقارات</p>
+                        <h3 class="rokna-banner-title">${escapeHtml(bannerCfg.title || "ما لقيت طلبك؟")}</h3>
+                        <p class="rokna-banner-slogan">${escapeHtml(bannerCfg.slogan || "أرسل مواصفاتك ونبحث لك عن العقار الأنسب.")}</p>
+                        <span class="rokna-banner-cta">
+                            ${escapeHtml(bannerCfg.cta || "اطلب عقاراً الآن")}
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                `;
+                inner = panel;
             } else {
                 wrap.classList.add("listings-ad-banner--brand");
                 const panel = document.createElement("div");
                 panel.className = "rokna-banner";
                 panel.innerHTML = `
                     <div class="rokna-banner-logo-card">
-                        <img src="${cfg.logoUrl}" alt="شعار الركن الأوسط للعقارات" class="rokna-banner-logo" width="200" height="180" loading="lazy" decoding="async">
+                        <img src="${escapeHtml(cfg.logoUrl)}" alt="شعار الركن الأوسط للعقارات" class="rokna-banner-logo" width="200" height="180" loading="lazy" decoding="async">
                     </div>
                     <div class="rokna-banner-content">
-                        <h3 class="rokna-banner-title">الركن الأوسط</h3>
+                        <h3 class="rokna-banner-title">${escapeHtml(bannerCfg.title || "الركن الأوسط")}</h3>
                         <p class="rokna-banner-subtitle">للعقارات</p>
-                        <p class="rokna-banner-slogan">في كل زاوية، فرصة استثمارية.</p>
+                        <p class="rokna-banner-slogan">${escapeHtml(bannerCfg.slogan || "في كل زاوية، فرصة استثمارية.")}</p>
                         <div class="rokna-banner-services" role="list">
                             <span class="rokna-banner-pill" role="listitem">تأجير</span>
                             <span class="rokna-banner-pill" role="listitem">بيع</span>
@@ -790,13 +945,16 @@
                 inner = panel;
             }
 
-            if (cfg.linkUrl) {
+            if (linkUrl) {
                 const a = document.createElement("a");
-                a.href = cfg.linkUrl;
-                a.target = "_blank";
-                a.rel = "noopener noreferrer";
+                a.href = linkUrl;
+                const isExternal = /^https?:\/\//i.test(linkUrl);
+                if (isExternal) {
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                }
                 a.className = "listings-ad-banner-link";
-                a.setAttribute("aria-label", cfg.alt);
+                a.setAttribute("aria-label", alt);
                 a.appendChild(inner);
                 wrap.appendChild(a);
             } else {
@@ -806,12 +964,12 @@
         }
 
         function syncListingsAdBannerVisibility() {
-            const banner = document.querySelector("[data-listings-ad-banner]");
-            if (!banner) return;
-            const after = parseInt(banner.getAttribute("data-insert-after") || "3", 10);
             const cards = Array.from(document.querySelectorAll("[data-property-card]"));
             const visible = cards.filter((c) => c.style.display !== "none").length;
-            banner.style.display = visible >= after ? "" : "none";
+            document.querySelectorAll("[data-listings-ad-banner]").forEach((banner) => {
+                const after = parseInt(banner.getAttribute("data-insert-after") || "0", 10);
+                banner.style.display = visible >= after ? "" : "none";
+            });
         }
         window.syncListingsAdBannerVisibility = syncListingsAdBannerVisibility;
 
@@ -834,30 +992,130 @@
             }
         }
 
-        // Search button (مرة واحدة فقط)
-        const searchBtn = document.getElementById("btn-search");
-        if (searchBtn) {
-            searchBtn.addEventListener("click", () => {
-                const offerType = document.getElementById("filter-offer-type")?.value;
-                const propertyType = document.getElementById("filter-type")?.value;
-                const district = document.getElementById("filter-district-text")?.value;
-                const minPrice = document.getElementById("filter-min-price")?.value;
-                const maxPrice = document.getElementById("filter-max-price")?.value;
+        // Search + فلترة مضغوطة على الجوال
+        const filterBar = document.getElementById("offersFilterBar");
+        const filterToggle = document.getElementById("filterBarToggle");
+        const filterActiveCount = document.getElementById("filterActiveCount");
+        const districtInput = document.getElementById("filter-district-text");
 
-                const params = new URLSearchParams();
-                if (offerType && offerType !== "all") params.append("offer_type", offerType);
-                if (propertyType && propertyType !== "all") params.append("property_type", propertyType);
-                if (district) params.append("district", district);
-                if (minPrice) params.append("min_price", minPrice);
-                if (maxPrice) params.append("max_price", maxPrice);
+        function countActiveFilters() {
+            let n = 0;
+            const offerType = document.getElementById("filter-offer-type")?.value;
+            const propertyType = document.getElementById("filter-type")?.value;
+            const minPrice = document.getElementById("filter-min-price")?.value;
+            const maxPrice = document.getElementById("filter-max-price")?.value;
+            if (offerType && offerType !== "all") n += 1;
+            if (propertyType && propertyType !== "all") n += 1;
+            if (minPrice) n += 1;
+            if (maxPrice) n += 1;
+            return n;
+        }
 
-                const queryString = params.toString() ? `?${params.toString()}` : "";
-                fetchProperties(queryString);
+        function syncFilterActiveCount() {
+            if (!filterActiveCount) return;
+            const n = countActiveFilters();
+            if (n > 0) {
+                filterActiveCount.hidden = false;
+                filterActiveCount.textContent = String(n);
+            } else {
+                filterActiveCount.hidden = true;
+            }
+        }
 
+        function syncOffersUrl(params) {
+            try {
+                const url = new URL(window.location.href);
+                ["offer_type", "property_type", "district", "min_price", "max_price"].forEach((key) => {
+                    url.searchParams.delete(key);
+                });
+                params.forEach((value, key) => url.searchParams.set(key, value));
+                const qs = url.searchParams.toString();
+                const next = `${url.pathname}${qs ? `?${qs}` : ""}#offers`;
+                window.history.replaceState({}, "", next);
+            } catch (_) {
+                /* تجاهل بيئات بدون History API */
+            }
+        }
+
+        function runOffersSearch(options = {}) {
+            const { scroll = true, updateUrl = true } = options;
+            const offerType = document.getElementById("filter-offer-type")?.value;
+            const propertyType = document.getElementById("filter-type")?.value;
+            const district = districtInput?.value;
+            const minPrice = document.getElementById("filter-min-price")?.value;
+            const maxPrice = document.getElementById("filter-max-price")?.value;
+
+            const params = new URLSearchParams();
+            if (offerType && offerType !== "all") params.append("offer_type", offerType);
+            if (propertyType && propertyType !== "all") params.append("property_type", propertyType);
+            if (district) params.append("district", district);
+            if (minPrice) params.append("min_price", minPrice);
+            if (maxPrice) params.append("max_price", maxPrice);
+
+            const queryString = params.toString() ? `?${params.toString()}` : "";
+            if (updateUrl) syncOffersUrl(params);
+            fetchProperties(queryString);
+            syncFilterActiveCount();
+            updateOffersSectionTitle();
+
+            // على الجوال: أغلق التصفية المتقدمة بعد البحث لتوفير المساحة
+            if (filterBar && window.matchMedia("(max-width: 767px)").matches) {
+                filterBar.classList.remove("is-open");
+                if (filterToggle) filterToggle.setAttribute("aria-expanded", "false");
+            }
+
+            if (scroll) {
                 const offersSection = document.getElementById("offers");
                 if (offersSection) offersSection.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+
+        window.runOffersSearch = runOffersSearch;
+
+        function syncPropertyTypeButtons(type) {
+            const nextType = type || "all";
+            document.querySelectorAll(".ptype-btn").forEach((btn) => {
+                const btnType = btn.getAttribute("data-property-type") || "all";
+                btn.classList.toggle("is-active", btnType === nextType);
             });
         }
+
+        window.filterOffersByPropertyType = function filterOffersByPropertyType(type) {
+            const typeSelect = document.getElementById("filter-type");
+            const nextType = type || "all";
+            if (typeSelect) typeSelect.value = nextType;
+            syncPropertyTypeButtons(nextType);
+            runOffersSearch({ scroll: true, updateUrl: true });
+        };
+
+        if (filterToggle && filterBar) {
+            filterToggle.addEventListener("click", () => {
+                const open = filterBar.classList.toggle("is-open");
+                filterToggle.setAttribute("aria-expanded", open ? "true" : "false");
+            });
+        }
+
+        ["filter-offer-type", "filter-type", "filter-min-price", "filter-max-price"].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("change", syncFilterActiveCount);
+            if (el) el.addEventListener("input", syncFilterActiveCount);
+        });
+
+        const searchBtn = document.getElementById("btn-search");
+        const searchBtnAdvanced = document.getElementById("btn-search-advanced");
+        if (searchBtn) searchBtn.addEventListener("click", runOffersSearch);
+        if (searchBtnAdvanced) searchBtnAdvanced.addEventListener("click", runOffersSearch);
+
+        if (districtInput) {
+            districtInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    runOffersSearch();
+                }
+            });
+        }
+
+        syncFilterActiveCount();
 
         // ===== lead (inquiry modal) =====
         if (inquiryForm) {
@@ -1140,8 +1398,38 @@
             }
         };
 
-        // ✅ Start
-        fetchProperties();
+        // ✅ Start — طبّق فلتر الرابط إن وُجد (مثلاً من أقسام الهيرو)
+        (function bootListingsFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const offerType = params.get("offer_type");
+            const propertyType = params.get("property_type");
+            const district = params.get("district");
+            const minPrice = params.get("min_price");
+            const maxPrice = params.get("max_price");
+
+            if (offerType && document.getElementById("filter-offer-type")) {
+                document.getElementById("filter-offer-type").value = offerType;
+            }
+            if (propertyType && document.getElementById("filter-type")) {
+                document.getElementById("filter-type").value = propertyType;
+            }
+            syncPropertyTypeButtons(propertyType || "all");
+            if (district && districtInput) districtInput.value = district;
+            if (minPrice && document.getElementById("filter-min-price")) {
+                document.getElementById("filter-min-price").value = minPrice;
+            }
+            if (maxPrice && document.getElementById("filter-max-price")) {
+                document.getElementById("filter-max-price").value = maxPrice;
+            }
+
+            if (params.toString()) {
+                runOffersSearch({ scroll: window.location.hash === "#offers", updateUrl: false });
+            } else {
+                fetchProperties();
+            }
+            syncFilterActiveCount();
+            updateOffersSectionTitle();
+        })();
 
         // ✅ Activate reveal for existing elements
         document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
