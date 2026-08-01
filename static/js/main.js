@@ -438,7 +438,6 @@
                     if (typeof window.syncListingsAdBannerVisibility === "function") {
                         window.syncListingsAdBannerVisibility();
                     }
-                    if (typeof initOffersStackScroll === "function") initOffersStackScroll();
                 },
                 { passive: true }
             );
@@ -601,10 +600,8 @@
 
             data.forEach((prop, index) => {
                 const card = document.createElement("div");
-                const isMobileStack = window.matchMedia("(max-width: 767px)").matches;
-                card.className = isMobileStack ? "property-card stack-card" : "property-card reveal";
+                card.className = "property-card reveal";
                 card.setAttribute("data-property-card", "");
-                if (isMobileStack) card.style.zIndex = String(index + 1);
 
                 const imgUrl = prop.image_url || "/static/img/hero_skyline.png";
                 
@@ -666,7 +663,7 @@
                 `;
 
                 container.appendChild(card);
-                if (!isMobileStack) revealObserver.observe(card);
+                revealObserver.observe(card);
 
                 // بنر إعلاني بعد عدد معيّن من العروض (لا يُحسب ضمن pagination)
                 if (adCfg.enabled && index + 1 === adCfg.insertAfter) {
@@ -677,7 +674,6 @@
             // ✅ طبّق pagination بعد الرسم
             pager.applyPagination();
             syncListingsAdBannerVisibility();
-            initOffersStackScroll();
         }
 
         function getAdBannerConfig() {
@@ -769,52 +765,6 @@
             banner.style.display = visible >= after ? "" : "none";
         }
         window.syncListingsAdBannerVisibility = syncListingsAdBannerVisibility;
-
-        // تكدس الكروت يعتمد على CSS sticky فقط (بدون تحديثات scroll تسبب ارتجاج)
-        let stackResizeBound = false;
-        function initOffersStackScroll() {
-            const list = document.getElementById("propertiesList");
-            if (!list) return;
-
-            const isMobile = window.matchMedia("(max-width: 767px)").matches;
-            const cards = Array.from(list.querySelectorAll("[data-property-card]")).filter(
-                (c) => c.style.display !== "none"
-            );
-
-            cards.forEach((card, index) => {
-                // نظّف أي بقايا من منطق الـ transform القديم
-                card.style.removeProperty("--stack-progress");
-                card.classList.remove("is-stacked");
-
-                if (isMobile) {
-                    if (!card.classList.contains("stack-card")) {
-                        card.classList.remove("reveal");
-                        card.classList.add("stack-card");
-                    }
-                    // z-index تصاعدي حتى يغطي كل كرت الذي قبله
-                    card.style.zIndex = String(10 + index);
-                } else {
-                    card.classList.remove("stack-card");
-                    if (!card.classList.contains("reveal")) card.classList.add("reveal");
-                    card.style.removeProperty("z-index");
-                }
-            });
-
-            // البنر يبقى تحت الكروت المتكدسة
-            const banner = list.querySelector("[data-listings-ad-banner]");
-            if (banner) banner.style.zIndex = "1";
-
-            if (!stackResizeBound) {
-                window.addEventListener(
-                    "resize",
-                    () => {
-                        window.requestAnimationFrame(initOffersStackScroll);
-                    },
-                    { passive: true }
-                );
-                stackResizeBound = true;
-            }
-        }
 
         async function fetchProperties(queryString = "") {
             const apiURL = `/api/listings/${queryString}`;

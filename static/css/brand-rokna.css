@@ -2,7 +2,6 @@
    الركن الأوسط — طبقة الهوية الهادئة (فرونت فقط)
    ========================================================= */
 
-/* overflow-x:hidden على body يكسر position:sticky على الجوال */
 html,
 body {
     overflow-x: clip;
@@ -662,126 +661,6 @@ body {
 body.has-site-ticker .main-header {
     /* يبقى الهيدر فوق الشريط */
     z-index: 900;
-}
-
-/* —— تكدس كروت العروض على الجوال (sticky نقي بدون transform/filter) —— */
-@media (max-width: 767px) {
-    #offers {
-        overflow: visible;
-    }
-
-    #offers .container {
-        padding-left: 0.85rem;
-        padding-right: 0.85rem;
-        overflow: visible;
-    }
-
-    #offers .grid-listing#propertiesList,
-    #propertiesList.grid-listing {
-        display: flex !important;
-        flex-direction: column;
-        gap: 0;
-        padding-bottom: 12vh;
-        overflow: visible !important;
-    }
-
-    /* البنر لا يغطي الكروت المتكدسة */
-    #propertiesList .listings-ad-banner {
-        position: relative;
-        z-index: 1;
-        margin: 0.75rem 0 1rem;
-    }
-
-    #propertiesList .property-card.stack-card {
-        --stack-top: calc(72px + var(--ticker-h, 0px));
-        --stack-h: calc(100dvh - 88px - var(--ticker-h, 0px));
-        position: sticky !important;
-        top: var(--stack-top) !important;
-        height: var(--stack-h);
-        max-height: var(--stack-h);
-        margin: 0 0 1.5rem;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        isolation: auto !important;
-        border-radius: 20px !important;
-        border: 1px solid rgba(27, 79, 156, 0.14) !important;
-        background: #fff !important;
-        box-shadow: 0 14px 32px rgba(10, 10, 10, 0.12) !important;
-        /* مهم: لا transform ولا filter على عنصر sticky */
-        transform: none !important;
-        filter: none !important;
-        transition: none !important;
-        will-change: auto;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-    }
-
-    #propertiesList .property-card.stack-card::before {
-        display: none !important;
-    }
-
-    #propertiesList .property-card.stack-card:hover {
-        transform: none !important;
-        box-shadow: 0 14px 32px rgba(10, 10, 10, 0.12) !important;
-    }
-
-    #propertiesList .property-card.stack-card .property-thumb {
-        flex: 1 1 auto;
-        min-height: 42%;
-        height: auto !important;
-    }
-
-    #propertiesList .property-card.stack-card .property-thumb img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transform: none !important;
-    }
-
-    #propertiesList .property-card.stack-card:hover .property-thumb img {
-        transform: none !important;
-    }
-
-    #propertiesList .property-card.stack-card .property-content {
-        flex: 0 0 auto;
-        padding: 1.1rem 1.1rem 1.2rem;
-        background: #fff;
-    }
-
-    #propertiesList .property-card.stack-card .property-title {
-        color: #1B4F9C !important;
-        font-size: 1.12rem;
-        margin-bottom: 0.7rem;
-    }
-
-    #propertiesList .property-card.stack-card .property-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        align-items: stretch;
-    }
-
-    #propertiesList .property-card.stack-card .meta-item,
-    #propertiesList .property-card.stack-card .price-display,
-    #propertiesList .property-card.stack-card .price-hidden {
-        width: 100%;
-        margin: 0 !important;
-    }
-
-    #propertiesList .property-card.stack-card .btn-whatsapp-card {
-        border-radius: 999px !important;
-        padding: 0.85rem 1rem !important;
-        font-weight: 700;
-        box-shadow: none !important;
-    }
-
-    #propertiesActions {
-        position: relative;
-        z-index: 60;
-        padding: 0.75rem 0 1.75rem;
-        background: transparent;
-    }
 }
 
 /* ─── البنر الإعلاني (تصميم Gemini متجاوب) ─── */
