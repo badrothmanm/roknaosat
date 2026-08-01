@@ -770,48 +770,50 @@
         }
         window.syncListingsAdBannerVisibility = syncListingsAdBannerVisibility;
 
-        // تكدس كروت العروض على الجوال أثناء التمرير
-        let stackScrollBound = false;
+        // تكدس الكروت يعتمد على CSS sticky فقط (بدون تحديثات scroll تسبب ارتجاج)
+        let stackResizeBound = false;
         function initOffersStackScroll() {
             const list = document.getElementById("propertiesList");
             if (!list) return;
 
-            const update = () => {
-                if (!window.matchMedia("(max-width: 767px)").matches) {
-                    list.querySelectorAll(".stack-card").forEach((card) => {
-                        card.style.removeProperty("--stack-progress");
-                        card.classList.remove("is-stacked");
-                    });
-                    return;
-                }
+            const isMobile = window.matchMedia("(max-width: 767px)").matches;
+            const cards = Array.from(list.querySelectorAll("[data-property-card]")).filter(
+                (c) => c.style.display !== "none"
+            );
 
-                const cards = Array.from(list.querySelectorAll(".stack-card")).filter(
-                    (c) => c.style.display !== "none"
-                );
-                const stickyTop = 78;
+            cards.forEach((card, index) => {
+                // نظّف أي بقايا من منطق الـ transform القديم
+                card.style.removeProperty("--stack-progress");
+                card.classList.remove("is-stacked");
 
-                cards.forEach((card, i) => {
-                    const next = cards[i + 1];
-                    let progress = 0;
-                    if (next) {
-                        const cardRect = card.getBoundingClientRect();
-                        const nextRect = next.getBoundingClientRect();
-                        // كلما اقترب الكرت التالي من أعلى الشاشة يزيد التغطية
-                        const distance = nextRect.top - stickyTop;
-                        const range = Math.max(cardRect.height * 0.85, 1);
-                        progress = 1 - Math.min(1, Math.max(0, distance / range));
+                if (isMobile) {
+                    if (!card.classList.contains("stack-card")) {
+                        card.classList.remove("reveal");
+                        card.classList.add("stack-card");
                     }
-                    card.style.setProperty("--stack-progress", progress.toFixed(3));
-                    card.classList.toggle("is-stacked", progress > 0.02);
-                });
-            };
+                    // z-index تصاعدي حتى يغطي كل كرت الذي قبله
+                    card.style.zIndex = String(10 + index);
+                } else {
+                    card.classList.remove("stack-card");
+                    if (!card.classList.contains("reveal")) card.classList.add("reveal");
+                    card.style.removeProperty("z-index");
+                }
+            });
 
-            if (!stackScrollBound) {
-                window.addEventListener("scroll", update, { passive: true });
-                window.addEventListener("resize", update, { passive: true });
-                stackScrollBound = true;
+            // البنر يبقى تحت الكروت المتكدسة
+            const banner = list.querySelector("[data-listings-ad-banner]");
+            if (banner) banner.style.zIndex = "1";
+
+            if (!stackResizeBound) {
+                window.addEventListener(
+                    "resize",
+                    () => {
+                        window.requestAnimationFrame(initOffersStackScroll);
+                    },
+                    { passive: true }
+                );
+                stackResizeBound = true;
             }
-            requestAnimationFrame(update);
         }
 
         async function fetchProperties(queryString = "") {
