@@ -1,262 +1,257 @@
 {% load i18n static jazzmin admin_urls %}
-{% get_current_language as LANGUAGE_CODE %}
-{% get_current_language_bidi as LANGUAGE_BIDI %}
 {% get_jazzmin_settings request as jazzmin_settings %}
-{% get_jazzmin_ui_tweaks as jazzmin_ui %}
 
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{% block title %}{{ title }} | {{ jazzmin_settings.site_title }}{% endblock %}</title>
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
-
-    <!-- Bootstrap and adminLTE -->
-    <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}">
-
-    <!-- Bootswatch theme -->
-    {% if jazzmin_ui.theme.name != 'default' %}
-        <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
-    {% endif %}
-
-    <!-- Custom fixes -->
-    <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
-
-    {% if jazzmin_settings.custom_css %}
-        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
-    {% endif %}
-
-    <!-- Google Fonts - Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
 
     {% block extrastyle %}{% endblock %}
     {% block extrahead %}{% endblock %}
 
     <style>
+        /* صفحة الدخول فقط — بدون AdminLTE */
+        *, *::before, *::after { box-sizing: border-box; }
+
         :root {
-            --nav: #07101c;
-            --gold: #1B4F9C;
-            --gold-soft: rgba(197,160,89,0.15);
+            --ink: #0A0A0A;
+            --blue: #1B4F9C;
+            --blue-soft: #2B6BC4;
+            --line: rgba(27, 79, 156, 0.14);
+            --muted: #5B6B82;
+            --bg: #EEF3F9;
         }
 
-        /* Page background */
+        html, body {
+            margin: 0;
+            min-height: 100%;
+        }
+
         body.login-page {
-            background: radial-gradient(ellipse at 60% 20%, #0d2050 0%, #07101c 55%, #050d18 100%) !important;
             min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 2rem 1.1rem 2.5rem;
+            font-family: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(ellipse 55% 45% at 12% 18%, rgba(27, 79, 156, 0.12), transparent 70%),
+                radial-gradient(ellipse 45% 40% at 90% 78%, rgba(27, 79, 156, 0.08), transparent 65%),
+                linear-gradient(180deg, #F7F9FC 0%, #EEF3F9 100%);
+        }
+
+        .rokna-login {
+            width: min(100%, 420px);
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        /* Login box */
-        .login-box {
-            width: 100%;
-            max-width: 400px;
-            padding: 1rem;
-        }
-
-        /* ── LOGO AREA ── */
-        .login-logo {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .brand-mark {
-            display: inline-flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.6rem;
-            text-decoration: none;
+            gap: 1.35rem;
+            animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        .brand-icon-wrap {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(197,160,89,0.05));
-            border: 1.5px solid rgba(197,160,89,0.35);
-            border-radius: 16px;
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .rokna-login__brand {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 30px rgba(197,160,89,0.12), inset 0 1px 0 rgba(197,160,89,0.2);
-            transition: all 0.3s ease;
-        }
-
-        .brand-icon-wrap:hover {
-            box-shadow: 0 0 40px rgba(197,160,89,0.25);
-            border-color: rgba(197,160,89,0.6);
-        }
-
-        .brand-icon-wrap i {
-            font-size: 1.6rem;
-            color: var(--gold);
-        }
-
-        .brand-name {
-            font-family: 'Amiri', serif;
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: var(--gold);
-            letter-spacing: 0.5px;
-        }
-
-        .brand-subtitle {
-            font-family: 'Tajawal', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 400;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-top: -0.3rem;
-        }
-
-        /* ── CARD ── */
-        .card {
-            background: rgba(10, 22, 55, 0.85) !important;
-            border: 1px solid rgba(197,160,89,0.15) !important;
-            border-radius: 16px !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(197,160,89,0.08) !important;
-        }
-
-        .login-card-body {
-            padding: 2rem 1.75rem !important;
-        }
-
-        /* Welcome text */
-        .login-box-msg {
-            color: rgba(255,255,255,0.5) !important;
-            font-size: 0.85rem;
-            font-weight: 400;
+            gap: 0.65rem;
+            text-decoration: none;
+            color: inherit;
             text-align: center;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.02em;
         }
 
-        /* Input groups */
-        .input-group {
-            direction: rtl;
+        .rokna-login__logo {
+            display: block;
+            height: clamp(118px, 28vw, 148px);
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 18px 28px rgba(10, 10, 10, 0.12));
+            transition: transform 0.35s ease;
         }
 
-        .input-group .form-control {
-            background: rgba(255,255,255,0.04) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            border-left: none !important;
-            border-right-color: rgba(197,160,89,0.2) !important;
-            color: rgba(255,255,255,0.9) !important;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 0.9rem;
-            height: 48px;
-            border-radius: 0 8px 8px 0 !important;
-            transition: all 0.25s ease;
+        .rokna-login__brand:hover .rokna-login__logo {
+            transform: translateY(-2px);
         }
 
-        .input-group .form-control:focus {
-            border-color: rgba(197,160,89,0.4) !important;
-            background: rgba(197,160,89,0.04) !important;
-            box-shadow: none !important;
-            outline: none;
-        }
-
-        .input-group .form-control::placeholder {
-            color: rgba(255,255,255,0.25);
-            font-size: 0.85rem;
-        }
-
-        .input-group-text {
-            background: rgba(197,160,89,0.08) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            border-right: none !important;
-            border-left-color: rgba(197,160,89,0.2) !important;
-            color: var(--gold) !important;
-            width: 44px;
-            justify-content: center;
-            border-radius: 8px 0 0 8px !important;
-        }
-
-        /* Submit button */
-        .btn-primary,
-        .btn.btn-primary {
-            background: linear-gradient(135deg, #1B4F9C, #163F7D) !important;
-            border: none !important;
-            color: #07101c !important;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 1rem;
+        .rokna-login__eyebrow {
+            margin: 0;
+            font-size: 0.92rem;
             font-weight: 700;
-            height: 48px;
-            border-radius: 10px !important;
-            letter-spacing: 0.03em;
-            box-shadow: 0 8px 24px rgba(197,160,89,0.3) !important;
-            transition: all 0.3s ease !important;
+            color: var(--blue);
+            letter-spacing: 0.01em;
         }
 
-        .btn-primary:hover,
-        .btn.btn-primary:hover {
-            background: linear-gradient(135deg, #2B6BC4, #1B4F9C) !important;
-            box-shadow: 0 12px 30px rgba(197,160,89,0.45) !important;
+        .rokna-login__panel {
+            width: 100%;
+            padding: 1.75rem 1.5rem 1.55rem;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.8) inset,
+                0 20px 50px rgba(15, 35, 70, 0.08),
+                0 4px 16px rgba(27, 79, 156, 0.05);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .rokna-login__welcome {
+            margin: 0 0 1.35rem;
+            text-align: center;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.55;
+        }
+
+        .rokna-login__welcome span {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .rokna-field {
+            position: relative;
+            margin-bottom: 0.85rem;
+        }
+
+        .rokna-field__icon {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: #8AA0C0;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .rokna-field__icon svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .rokna-field__input {
+            width: 100%;
+            height: 52px;
+            padding: 0 2.85rem 0 1rem;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #F8FAFD;
+            color: var(--ink);
+            font: 500 0.98rem/1.2 "Tajawal", sans-serif;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .rokna-field__input::placeholder {
+            color: #9AA8BC;
+            font-weight: 400;
+        }
+
+        .rokna-field__input:hover {
+            border-color: rgba(27, 79, 156, 0.28);
+        }
+
+        .rokna-field__input:focus {
+            background: #fff;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(27, 79, 156, 0.12);
+        }
+
+        .rokna-field:focus-within .rokna-field__icon {
+            color: var(--blue);
+        }
+
+        .rokna-login__submit {
+            width: 100%;
+            height: 52px;
+            margin-top: 0.35rem;
+            border: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--blue-soft), var(--blue));
+            color: #fff;
+            font: 800 1.05rem/1 "Tajawal", sans-serif;
+            cursor: pointer;
+            box-shadow: 0 12px 28px rgba(27, 79, 156, 0.28);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+
+        .rokna-login__submit:hover {
+            filter: brightness(1.05);
             transform: translateY(-1px);
+            box-shadow: 0 16px 34px rgba(27, 79, 156, 0.34);
         }
 
-        .btn-primary:active {
-            transform: translateY(0) !important;
+        .rokna-login__submit:active {
+            transform: translateY(0);
         }
 
-        /* Error callout */
-        .callout-danger {
-            background: rgba(220, 38, 38, 0.1) !important;
-            border-color: rgba(220, 38, 38, 0.3) !important;
-            border-radius: 8px;
+        .rokna-login__alert {
+            margin: 0 0 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            background: rgba(220, 38, 38, 0.08);
+            border: 1px solid rgba(220, 38, 38, 0.18);
+            color: #B91C1C;
+            font-size: 0.88rem;
+            font-weight: 500;
+            line-height: 1.5;
         }
 
-        /* Link */
-        a {
-            color: rgba(197,160,89,0.7) !important;
-            transition: color 0.2s;
+        .rokna-login__alert p { margin: 0; }
+
+        .rokna-login__footer {
+            margin: 0;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #8A97AB;
+            line-height: 1.6;
         }
-        a:hover { color: var(--gold) !important; }
+
+        @media (max-width: 480px) {
+            .rokna-login__panel {
+                padding: 1.45rem 1.15rem 1.3rem;
+                border-radius: 20px;
+            }
+        }
     </style>
 </head>
 
 <body class="login-page">
-<div class="login-box">
-
-    <!-- Logo — matches site header exactly -->
-    <div class="login-logo">
-        <a href="{% url 'admin:index' %}" class="brand-mark">
-            <div class="brand-icon-wrap">
-                <i class="fas fa-building"></i>
-            </div>
-            <div>
-                <div class="brand-name">{{ jazzmin_settings.site_brand }}</div>
-                <div class="brand-subtitle">لوحة تحكم الإدارة</div>
-            </div>
+    <div class="rokna-login">
+        <a class="rokna-login__brand" href="/" title="الركن الأوسط للعقارات">
+            <img
+                class="rokna-login__logo"
+                src="{% static 'img/logo.png' %}?v=2"
+                alt="شعار الركن الأوسط للعقارات"
+                width="160"
+                height="148"
+            >
+            <p class="rokna-login__eyebrow">لوحة تحكم الإدارة</p>
         </a>
-    </div>
 
-    <div class="card">
-        <div class="card-body login-card-body">
+        <div class="rokna-login__panel">
             {% block content %}{% endblock %}
         </div>
+
+        <p class="rokna-login__footer">الركن الأوسط للعقارات — تأجير · بيع · إدارة أملاك · تطوير عقاري</p>
     </div>
-</div>
-
-<!-- jQuery -->
-<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
-<!-- Bootstrap 5 -->
-<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<!-- AdminLTE App -->
-<script src="{% static 'vendor/adminlte/js/adminlte.min.js' %}"></script>
-
-{% if jazzmin_settings.custom_js %}
-    <script src="{% static jazzmin_settings.custom_js %}"></script>
-{% endif %}
-
 </body>
 </html>

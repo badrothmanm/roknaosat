@@ -1,0 +1,73 @@
+{% extends "registration/base.html" %}
+{% load i18n static %}
+
+{% block content %}
+    <p class="rokna-login__welcome">
+        مرحباً بك
+        <span>سجّل الدخول لإدارة عروض ومحتوى الركن الأوسط</span>
+    </p>
+
+    <form action="{{ app_path }}" method="post" novalidate>
+        {% csrf_token %}
+
+        {% if user.is_authenticated %}
+            <div class="rokna-login__alert">
+                <p>
+                    أنت مسجّل الدخول كـ {{ username }} لكن لا تملك صلاحية الوصول لهذه الصفحة.
+                    هل تريد الدخول بحساب آخر؟
+                </p>
+            </div>
+        {% endif %}
+
+        {% if form.errors %}
+            <div class="rokna-login__alert">
+                {% if form.username.errors %}
+                    <p>اسم المستخدم: {{ form.username.errors|join:', ' }}</p>
+                {% endif %}
+                {% if form.password.errors %}
+                    <p>كلمة المرور: {{ form.password.errors|join:', ' }}</p>
+                {% endif %}
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="rokna-field">
+            <span class="rokna-field__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </span>
+            <input
+                class="rokna-field__input"
+                type="text"
+                name="username"
+                placeholder="اسم المستخدم"
+                required
+                autofocus
+                autocomplete="username"
+            >
+        </div>
+
+        <div class="rokna-field">
+            <span class="rokna-field__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="11" width="16" height="10" rx="2"/>
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+                </svg>
+            </span>
+            <input
+                class="rokna-field__input"
+                type="password"
+                name="password"
+                placeholder="كلمة المرور"
+                required
+                autocomplete="current-password"
+            >
+        </div>
+
+        <button type="submit" class="rokna-login__submit">ادخل</button>
+    </form>
+{% endblock %}
