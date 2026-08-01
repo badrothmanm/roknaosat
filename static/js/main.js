@@ -438,6 +438,9 @@
                     if (typeof window.syncListingsAdBannerVisibility === "function") {
                         window.syncListingsAdBannerVisibility();
                     }
+                    if (typeof window.syncOffersCardStack === "function") {
+                        window.syncOffersCardStack();
+                    }
                 },
                 { passive: true }
             );
@@ -598,9 +601,14 @@
                 return;
             }
 
+            const isMobileStack = window.matchMedia("(max-width: 768px)").matches;
+
             data.forEach((prop, index) => {
                 const card = document.createElement("div");
-                card.className = "property-card reveal";
+                // على الجوال: sticky stack بدون reveal (transform يكسر sticky)
+                card.className = isMobileStack
+                    ? "property-card property-card-item"
+                    : "property-card reveal";
                 card.setAttribute("data-property-card", "");
 
                 const imgUrl = prop.image_url || "/static/img/hero_skyline.png";
@@ -663,7 +671,7 @@
                 `;
 
                 container.appendChild(card);
-                revealObserver.observe(card);
+                if (!isMobileStack) revealObserver.observe(card);
 
                 // بنر إعلاني بعد عدد معيّن من العروض (لا يُحسب ضمن pagination)
                 if (adCfg.enabled && index + 1 === adCfg.insertAfter) {
@@ -674,7 +682,48 @@
             // ✅ طبّق pagination بعد الرسم
             pager.applyPagination();
             syncListingsAdBannerVisibility();
+            syncOffersCardStack();
         }
+
+        /** يضبط z-index ودرجة sticky لكل كرت ظاهر (يتجاوز مشكلة البنر مع nth-child) */
+        function syncOffersCardStack() {
+            const list = document.getElementById("propertiesList");
+            if (!list) return;
+
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            const cards = Array.from(list.querySelectorAll("[data-property-card]")).filter(
+                (c) => c.style.display !== "none"
+            );
+
+            cards.forEach((card, index) => {
+                if (!isMobile) {
+                    card.classList.remove("property-card-item");
+                    card.style.removeProperty("--stack-step");
+                    card.style.removeProperty("--stack-z");
+                    card.style.removeProperty("z-index");
+                    return;
+                }
+
+                card.classList.add("property-card-item");
+                card.classList.remove("reveal");
+                const step = Math.min(index, 4) * 10;
+                card.style.setProperty("--stack-step", `${step}px`);
+                card.style.setProperty("--stack-z", String(index + 1));
+                card.style.zIndex = String(index + 1);
+            });
+
+            const banner = list.querySelector("[data-listings-ad-banner]");
+            if (banner) banner.style.zIndex = "0";
+        }
+        window.syncOffersCardStack = syncOffersCardStack;
+
+        window.addEventListener(
+            "resize",
+            () => {
+                window.requestAnimationFrame(syncOffersCardStack);
+            },
+            { passive: true }
+        );
 
         function getAdBannerConfig() {
             const el = document.getElementById("site-ad-banner-config");

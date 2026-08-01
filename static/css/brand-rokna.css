@@ -663,6 +663,84 @@ body.has-site-ticker .main-header {
     z-index: 900;
 }
 
+/* —— تكدس كروت العروض (sticky) على الجوال فقط —— */
+@media (max-width: 768px) {
+    /* overflow على الآباء يكسر sticky — أبقِ المسار مفتوحاً */
+    #offers,
+    #offers .container,
+    #offers .property-cards-container,
+    #propertiesList.property-cards-container {
+        overflow: visible !important;
+    }
+
+    .property-cards-container {
+        display: flex !important;
+        flex-direction: column;
+        gap: 16px;
+        padding-bottom: 40px;
+    }
+
+    .property-cards-container .listings-ad-banner {
+        position: relative;
+        z-index: 0;
+        margin: 4px 0 8px;
+        flex-shrink: 0;
+    }
+
+    .property-cards-container .property-card.property-card-item,
+    .property-card-item {
+        /* يتجاوز position: relative !important على .property-card */
+        position: sticky !important;
+        top: calc(80px + var(--ticker-h, 0px) + var(--stack-step, 0px));
+        z-index: var(--stack-z, 1);
+
+        background-color: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow:
+            0 -4px 20px rgba(0, 0, 0, 0.08),
+            0 4px 12px rgba(0, 0, 0, 0.05) !important;
+
+        margin-bottom: 12px;
+        isolation: auto !important;
+
+        /* لا transform / filter / will-change:transform — تكسر sticky */
+        transform: none !important;
+        filter: none !important;
+        will-change: auto;
+        transition: box-shadow 0.2s ease !important;
+    }
+
+    .property-cards-container .property-card.property-card-item:hover,
+    .property-card-item:hover {
+        transform: none !important;
+        box-shadow:
+            0 -6px 24px rgba(0, 0, 0, 0.1),
+            0 8px 18px rgba(27, 79, 156, 0.1) !important;
+    }
+
+    .property-cards-container .property-card.property-card-item::before {
+        display: none !important;
+    }
+
+    .property-cards-container .property-card.property-card-item .property-thumb img {
+        transform: none !important;
+    }
+
+    /* تدرج عمق افتراضي إن لم يُضبط عبر JS */
+    .property-card-item:nth-child(1) { --stack-step: 0px; --stack-z: 1; }
+    .property-card-item:nth-child(2) { --stack-step: 10px; --stack-z: 2; }
+    .property-card-item:nth-child(3) { --stack-step: 20px; --stack-z: 3; }
+    .property-card-item:nth-child(4) { --stack-step: 30px; --stack-z: 4; }
+    .property-card-item:nth-child(5) { --stack-step: 40px; --stack-z: 5; }
+    .property-card-item:nth-child(n+6) { --stack-step: 40px; --stack-z: 10; }
+
+    #propertiesActions {
+        position: relative;
+        z-index: 60;
+        margin-top: 8px;
+    }
+}
+
 /* ─── البنر الإعلاني (تصميم Gemini متجاوب) ─── */
 .listings-ad-banner {
     grid-column: 1 / -1;
